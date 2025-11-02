@@ -5,6 +5,16 @@ executable using GraalVM.
 
 ## Quick Examples
 
+**Start a test server:**
+
+```bash
+$ modbus server
+Modbus server started on 0.0.0.0:502
+```
+
+The server initializes with 65536 holding registers, each pre-populated with its address as a value.
+Leave this running in one terminal while trying the client examples below in another.
+
 **Read holding registers:**
 
 ```bash
