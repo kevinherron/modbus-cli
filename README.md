@@ -330,7 +330,7 @@ All JSON output is newline-delimited (NDJSON) for easy streaming and parsing.
 
 ## License
 
-See LICENSE file for details.
+See [LICENSE.md](LICENSE.md) for details.
 
 ## Contributing
 
