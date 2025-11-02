@@ -24,7 +24,7 @@
     <junit.version>5.11.4</junit.version>
 
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>3.9.1</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.9.0</maven-dependency-plugin.version>
     <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
     <native.maven.plugin.version>0.11.2</native.maven.plugin.version>
     <spotless-maven-plugin.version>3.0.0</spotless-maven-plugin.version>
