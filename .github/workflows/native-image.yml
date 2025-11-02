@@ -1,0 +1,49 @@
+name: Native Image Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-native:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: modbus
+            artifact_path: target/modbus
+          - os: windows-latest
+            artifact_name: modbus.exe
+            artifact_path: target/modbus.exe
+          - os: macos-latest
+            artifact_name: modbus
+            artifact_path: target/modbus
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GraalVM JDK 25
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
+      - name: Build Native Image
+        run: mvn -B package -Pnative
+
+      - name: Upload Native Image Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: modbus-${{ matrix.os }}
+          path: ${{ matrix.artifact_path }}
+          if-no-files-found: error
