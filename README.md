@@ -3,6 +3,66 @@
 A command-line interface for Modbus TCP operations, built with Java 25 and compilable to a native
 executable using GraalVM.
 
+## Quick Examples
+
+**Read holding registers:**
+
+```bash
+$ modbus client localhost rhr 0 10
+Hostname: localhost:502, Unit ID: 1
+→ ReadHoldingRegistersRequest[address=0, quantity=10]
+← ReadHoldingRegistersResponse[registers=0000000100020003000400050006000700080009]
+Offset (hex)	Bytes (hex)
+-------------------------
+00000000	00 00 00 01 00 02 00 03 00 04 00 05 00 06 00 07
+00000010	00 08 00 09 .. .. .. .. .. .. .. .. .. .. .. ..
+```
+
+**Get JSON output for automation:**
+
+```bash
+$ modbus --format=json client localhost rhr 0 10
+{"timestamp":"2025-11-02T23:07:57.618695Z","type":"info","message":"Hostname: localhost:502, Unit ID: 1"}
+{"timestamp":"2025-11-02T23:07:57.627904Z","type":"register_table","start_address":0,"quantity":10,"data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+```
+
+**Write then read back a register:**
+
+```bash
+$ modbus --format=json client localhost wsr 100 42
+{"timestamp":"2025-11-02T23:08:09.316542Z","type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}
+
+$ modbus --format=json client localhost rhr 100 1
+{"timestamp":"2025-11-02T23:08:09.332309Z","type":"register_table","start_address":100,"quantity":1,"data":[0,42]}
+```
+
+**Scan a range of registers:**
+
+```bash
+$ modbus client localhost scan 0 50 --size=10
+Hostname: localhost:502, Unit ID: 1
+Address 	Values (hex, 2 bytes each)
+-------------------------------------------------------
+0000    	0000 0001 0002 0003 0004 0005 0006 0007
+0008    	0008 0009 000A 000B 000C 000D 000E 000F
+0010    	0010 0011 0012 0013 0014 0015 0016 0017
+0018    	0018 0019 001A 001B 001C 001D 001E 001F
+0020    	0020 0021 0022 0023 0024 0025 0026 0027
+0028    	0028 0029 002A 002B 002C 002D 002E 002F
+0030    	0030 0031
+```
+
+**Poll and filter JSON output with jq:**
+
+```bash
+$ modbus --format=json client localhost rhr 0 10 -c 5 | jq -c 'select(.type == "register_table") | {timestamp, data}'
+{"timestamp":"2025-11-02T23:12:37.072923Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+{"timestamp":"2025-11-02T23:12:38.075708Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+{"timestamp":"2025-11-02T23:12:39.081328Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+{"timestamp":"2025-11-02T23:12:40.086801Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+{"timestamp":"2025-11-02T23:12:41.088714Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+```
+
 ## Features
 
 - **Client Commands**: Read/write coils, discrete inputs, holding registers, and input registers
@@ -137,68 +197,6 @@ modbus [global-options] client <hostname> [client-options] <subcommand> [subcomm
 - `--step <n>` - Step size, i.e. how many registers to advance the window (default: same as size)
 - `--partial <true|false>` - Read partial windows at the end (default: true)
 
-### Examples
-
-#### Read 10 holding registers starting at address 0
-
-```bash
-# Using JAR
-java -jar target/modbus-cli-0.1-SNAPSHOT.jar client 192.168.1.100 rhr 0 10
-
-# Using native executable
-./target/modbus client 192.168.1.100 rhr 0 10
-```
-
-#### Write a single coil at address 100
-
-```bash
-./target/modbus client 192.168.1.100 wsc 100 true
-```
-
-#### Read from a specific unit ID on non-standard port
-
-```bash
-./target/modbus client 192.168.1.100 -p 5020 --unit-id 5 rc 0 16
-```
-
-#### Write multiple registers
-
-```bash
-./target/modbus client 192.168.1.100 wmr 0 100 200 300 400
-```
-
-#### Scan a range of registers (0-99)
-
-```bash
-./target/modbus client 192.168.1.100 scan 0 100
-```
-
-#### Scan with custom window size and step
-
-```bash
-# Read 5 registers at a time, advancing by 3 each step
-./target/modbus client 192.168.1.100 scan 0 50 --size=5 --step=3
-```
-
-#### Get JSON output for automation
-
-```bash
-# Human-readable (default)
-./target/modbus client 192.168.1.100 rhr 0 10
-
-# JSON format
-./target/modbus --format=json client 192.168.1.100 rhr 0 10
-
-# JSON with minimal output (data only)
-./target/modbus --format=json --quiet client 192.168.1.100 rhr 0 10 | jq
-```
-
-## Performance Comparison
-
-The native executable offers significantly faster startup times and lower memory usage compared to
-running the JAR with a JVM, while maintaining similar execution performance for network I/O bound
-operations.
-
 ## Architecture
 
 ### Dependencies
@@ -272,50 +270,10 @@ mvn -Pnative clean package
 mvn test
 ```
 
-### Troubleshooting Native Image Build
-
-If you encounter issues:
-
-1. **Missing reflection configuration**: The picocli-codegen annotation processor should handle this
-   automatically. Verify it ran during compilation:
-   ```bash
-   mvn clean compile
-   ls -la target/classes/META-INF/native-image/picocli-generated/
-   ```
-
-2. **Netty-related errors**: Netty includes native-image configuration. If issues occur, you may
-   need to add runtime initialization:
-   ```
-   --initialize-at-run-time=io.netty.channel.epoll.Epoll
-   ```
-
-3. **Memory errors during build**: Increase Maven memory:
-   ```bash
-   export MAVEN_OPTS="-Xmx6g"
-   mvn -Pnative clean package
-   ```
-
-4. **Platform-specific issues**: Some Netty features (epoll on Linux, kqueue on macOS) may need
-   additional configuration.
-
 ## JSON Output Format
 
 The CLI supports JSON output via `--format=json` for machine parsing and automation.
-See [JSON_OUTPUT.md](README_JSON_FORMAT.md) for complete documentation.
-
-### Quick Examples
-
-```bash
-# Get register data as JSON
-modbus --format=json --quiet client localhost rhr 0 10 | jq
-
-# Parse with jq - extract just the data array
-modbus --format=json --quiet client localhost rhr 0 10 | jq '.data'
-
-# Convert bytes to 16-bit integers
-modbus --format=json --quiet client localhost rhr 0 5 | \
-  jq '[.data | _nwise(2) | .[0] * 256 + .[1]]'
-```
+See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 
 ### Output Types
 
