@@ -1,0 +1,82 @@
+{
+  // Dev container for Modbus CLI: JDK 25 (GraalVM), Maven, git, jq, and VS Code Java tools
+  "name": "Modbus CLI (Java 25, GraalVM)",
+
+  // Use stable base image; the java feature will install JDK 25 GraalVM
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "25",
+      "installMaven": "true",
+      "installGradle": "false",
+      "jdkDistro": "graal"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": "true",
+      "installOhMyZsh": "true",
+      "upgradePackages": "true"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-maven",
+        "redhat.java",
+        "vscjava.vscode-java-dependency",
+        "vscjava.vscode-java-test",
+        "vscjava.vscode-java-debug",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers"
+      ],
+      "settings": {
+        // point VS Code's Java runtime to the SDKMAN-installed candidate that the feature will create
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-25",
+            "path": "/usr/local/sdkman/candidates/java/current",
+            "default": true
+          }
+        ],
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+        "maven.executable.path": "/usr/local/sdkman/candidates/maven/current/bin/mvn",
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "files.exclude": {
+          "**/target": true,
+          "**/.classpath": true,
+          "**/.project": true,
+          "**/.settings": true,
+          "**/.factorypath": true
+        }
+      }
+    }
+  },
+
+  // Lightweight verification after creation — won't fail container creation on minor issues.
+  "postCreateCommand": "bash -lc 'java -version || true; mvn -v || true; sudo apt-get update && sudo apt-get install -y jq'",
+
+  "remoteEnv": {
+    "JAVA_HOME": "/usr/local/sdkman/candidates/java/current",
+    "MAVEN_HOME": "/usr/local/sdkman/candidates/maven/current",
+    "GRAALVM_HOME": "/usr/local/sdkman/candidates/java/current"
+  },
+
+  // Mount the host Maven cache to speed builds
+  "mounts": [
+    "source=${localEnv:HOME}/.m2,target=/home/vscode/.m2,type=bind,consistency=cached"
+  ],
+
+  // Enable binding to privileged ports (< 1024) like Modbus TCP port 502
+  "runArgs": [
+    "--cap-add=NET_BIND_SERVICE"
+  ],
+
+  "containerEnv": {
+    "TZ": "UTC"
+  }
+}
