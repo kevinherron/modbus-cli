@@ -12,20 +12,41 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
+/**
+ * Implements the Modbus function code 02 (Read Discrete Inputs) operation.
+ *
+ * <p>Discrete inputs are read-only boolean values representing physical inputs such as sensors,
+ * switches, or status indicators. Unlike coils (function code 01), discrete inputs cannot be
+ * written to—they reflect the state of external signals.
+ *
+ * <p>This command is invoked using {@code rdi} (e.g., {@code modbus client rdi 0 10}).
+ *
+ * @see ReadCoilsCommand for read/write discrete outputs (function code 01)
+ */
 @Command(name = "rdi", description = "Read Discrete Inputs")
 class ReadDiscreteInputsCommand implements Runnable {
 
+  /**
+   * Starting discrete input address. Addressing is typically 0-based, though some devices use
+   * 1-based.
+   */
   @Parameters(index = "0", description = "starting address")
   int address;
 
+  /** Number of discrete inputs to read, starting from the specified address. */
   @Parameters(index = "1", description = "quantity of discrete inputs")
   int quantity;
 
+  /**
+   * Number of times to execute the read operation. A value of 0 means indefinite polling until
+   * interrupted.
+   */
   @Option(
       names = {"-c", "--count"},
       description = "number of times to repeat (default: 1, 0 = indefinite)")
   int count = 1;
 
+  /** Delay between consecutive reads in polling mode, specified in milliseconds. */
   @Option(
       names = {"-i", "--interval"},
       description = "interval between reads in milliseconds (default: 1000)")
@@ -44,6 +65,14 @@ class ReadDiscreteInputsCommand implements Runnable {
     }
   }
 
+  /**
+   * Executes the Read Discrete Inputs request and renders the results as a coil table.
+   *
+   * @param client the connected Modbus TCP client.
+   * @param unitId the target unit identifier.
+   * @param output the output context for rendering protocol messages and results.
+   * @throws ModbusException if the Modbus operation fails.
+   */
   private void executeRead(ModbusTcpClient client, int unitId, OutputContext output)
       throws ModbusException {
 

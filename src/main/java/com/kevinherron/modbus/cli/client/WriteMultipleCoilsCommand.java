@@ -11,15 +11,39 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
+/**
+ * Implements the Modbus function code 15 (Write Multiple Coils) operation.
+ *
+ * <p>This command writes multiple coils (discrete outputs) in a single transaction. Coils are
+ * read/write boolean values typically representing physical outputs like relays or actuators.
+ *
+ * <p>This command is invoked using {@code wmc} (e.g., {@code modbus client wmc 0 4
+ * true,false,1,0}).
+ *
+ * <p>Coil values are packed into bytes using LSB-first bit ordering per the Modbus protocol. The
+ * byte count is calculated as {@code (quantity + 7) / 8}, and each coil value is set as a bit
+ * within the appropriate byte position.
+ *
+ * @see WriteSingleCoilCommand for writing a single coil (function code 05)
+ * @see ReadCoilsCommand for reading coil values (function code 01)
+ */
 @Command(name = "wmc", description = "Write Multiple Coils")
 class WriteMultipleCoilsCommand implements Runnable {
 
+  /** The starting address for writing coils. Addressing is typically 0-based. */
   @Parameters(index = "0", description = "starting address")
   int address;
 
+  /** The number of consecutive coils to write. Must match the number of values provided. */
   @Parameters(index = "1", description = "quantity of coils")
   int quantity;
 
+  /**
+   * Comma-separated coil values to write. Accepts flexible boolean formats parsed by {@link
+   * ValueParser#parseCoilValue(String)}: {@code true}/{@code false}, {@code 1}/{@code 0}, or {@code
+   * on}/{@code off} (case-insensitive). The number of values must exactly match the {@code
+   * quantity} parameter.
+   */
   @Parameters(index = "2", description = "coil values (comma-separated, true/false or 1/0)")
   String values;
 

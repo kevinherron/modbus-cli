@@ -11,15 +11,38 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
+/**
+ * Implements the Modbus function code 16 (Write Multiple Registers) operation.
+ *
+ * <p>This command writes multiple consecutive holding registers in a single transaction. Holding
+ * registers are 16-bit read/write values commonly used for configuration settings, setpoints, and
+ * other numeric data.
+ *
+ * <p>This command is invoked using {@code wmr} (e.g., {@code modbus client wmr 0 3 100,0x64,200}).
+ *
+ * <p>Register values are encoded in big-endian byte order per the Modbus protocol: the high byte is
+ * transmitted first, followed by the low byte. Each 16-bit register value is converted to 2 bytes
+ * using {@code (value >> 8) & 0xFF} for the high byte and {@code value & 0xFF} for the low byte.
+ *
+ * @see WriteSingleRegisterCommand for writing a single register (function code 06)
+ * @see ReadHoldingRegistersCommand for reading holding registers (function code 03)
+ */
 @Command(name = "wmr", description = "Write Multiple Registers")
 class WriteMultipleRegistersCommand implements Runnable {
 
+  /** The starting address for writing registers. Addressing is typically 0-based. */
   @Parameters(index = "0", description = "starting address")
   int address;
 
+  /** The number of consecutive registers to write. Must match the number of values provided. */
   @Parameters(index = "1", description = "quantity of registers")
   int quantity;
 
+  /**
+   * Comma-separated register values to write. Accepts decimal (e.g., {@code 1234}) or hexadecimal
+   * (e.g., {@code 0x04D2}) formats parsed by {@link ValueParser#parseRegisterValue(String)}. The
+   * number of values must exactly match the {@code quantity} parameter.
+   */
   @Parameters(
       index = "2",
       description = "register values (comma-separated, decimal or hex, e.g., 100,0x64,200)")
