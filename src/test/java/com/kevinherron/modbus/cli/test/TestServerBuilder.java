@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -51,8 +52,10 @@ public class TestServerBuilder implements AutoCloseable {
   private String bindAddress = "127.0.0.1";
   private Integer port;
   private ProcessImage processImage;
+  private boolean separateUnits = false;
   private ModbusTcpServer server;
   private int actualPort = -1;
+  private ConcurrentHashMap<Integer, ProcessImage> unitProcessImages;
 
   /**
    * Set the bind address for the server.
@@ -86,11 +89,30 @@ public class TestServerBuilder implements AutoCloseable {
    * <p>If not set, a {@link TestProcessImage} with default initialization (holding registers set to
    * their addresses) will be used.
    *
+   * <p>This option is mutually exclusive with {@link #withSeparateUnits(boolean)}.
+   *
    * @param processImage the process image to use.
    * @return this builder.
    */
   public TestServerBuilder withProcessImage(ProcessImage processImage) {
     this.processImage = processImage;
+    return this;
+  }
+
+  /**
+   * Enable separate ProcessImage per unit ID.
+   *
+   * <p>When enabled, each Modbus unit/slave ID will have its own isolated ProcessImage.
+   * ProcessImages are created lazily on first access and initialized with default values (holding
+   * registers set to their addresses).
+   *
+   * <p>This option is mutually exclusive with {@link #withProcessImage(ProcessImage)}.
+   *
+   * @param separateUnits true to enable separate ProcessImages per unit ID.
+   * @return this builder.
+   */
+  public TestServerBuilder withSeparateUnits(boolean separateUnits) {
+    this.separateUnits = separateUnits;
     return this;
   }
 
@@ -119,7 +141,9 @@ public class TestServerBuilder implements AutoCloseable {
       throw new IllegalStateException("Server already started");
     }
 
-    if (processImage == null) {
+    if (separateUnits) {
+      unitProcessImages = new ConcurrentHashMap<>();
+    } else if (processImage == null) {
       processImage = createDefaultProcessImage();
     }
 
@@ -136,6 +160,10 @@ public class TestServerBuilder implements AutoCloseable {
         new ReadWriteModbusServices() {
           @Override
           protected Optional<ProcessImage> getProcessImage(int unitId) {
+            if (separateUnits) {
+              return Optional.of(
+                  unitProcessImages.computeIfAbsent(unitId, id -> createDefaultProcessImage()));
+            }
             return Optional.of(processImage);
           }
         };
@@ -195,14 +223,31 @@ public class TestServerBuilder implements AutoCloseable {
   }
 
   /**
-   * Get the ProcessImage being used by the server.
+   * Get the ProcessImage being used by the server (shared mode only).
    *
    * <p>This allows tests to modify the ProcessImage after the server has started.
    *
-   * @return the ProcessImage, or null if the server has not been started.
+   * @return the ProcessImage, or null if the server has not been started or is in separate units
+   *     mode.
    */
   public ProcessImage getProcessImage() {
     return processImage;
+  }
+
+  /**
+   * Get the ProcessImage for a specific unit ID (separate units mode only).
+   *
+   * <p>This allows tests to access and verify the ProcessImage for a specific unit.
+   *
+   * @param unitId the unit ID to get the ProcessImage for.
+   * @return the ProcessImage for the given unit, or null if not in separate units mode or the unit
+   *     has not been accessed yet.
+   */
+  public ProcessImage getProcessImage(int unitId) {
+    if (unitProcessImages == null) {
+      return null;
+    }
+    return unitProcessImages.get(unitId);
   }
 
   /**

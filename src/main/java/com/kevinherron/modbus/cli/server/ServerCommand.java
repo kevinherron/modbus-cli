@@ -9,6 +9,8 @@ import com.kevinherron.modbus.cli.output.OutputContext;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -29,6 +31,11 @@ public class ServerCommand implements Runnable {
       description = "port to listen on")
   int port = 502;
 
+  @Option(
+      names = {"--separate-units"},
+      description = "treat each unit ID as a separate device with its own process image")
+  boolean separateUnits = false;
+
   @Override
   public void run() {
     OutputContext output = parent.createOutputContext();
@@ -42,26 +49,14 @@ public class ServerCommand implements Runnable {
 
     var services =
         new ReadWriteModbusServices() {
-
-          private final ProcessImage processImage = new ProcessImage();
-
-          {
-            processImage.with(
-                tx ->
-                    tx.writeHoldingRegisters(
-                        registerMap -> {
-                          for (int i = 0; i < 65536; i++) {
-                            byte[] bs = new byte[2];
-                            bs[0] = (byte) ((i >> 8) & 0xFF);
-                            bs[1] = (byte) (i & 0xFF);
-                            registerMap.put(i, bs);
-                          }
-                        }));
-          }
+          private static final int SHARED_KEY = 0;
+          private final ConcurrentMap<Integer, ProcessImage> processImages =
+              new ConcurrentHashMap<>();
 
           @Override
-          protected Optional<ProcessImage> getProcessImage(int i) {
-            return Optional.of(processImage);
+          protected Optional<ProcessImage> getProcessImage(int unitId) {
+            int key = separateUnits ? unitId : SHARED_KEY;
+            return Optional.of(processImages.computeIfAbsent(key, _ -> createProcessImage()));
           }
         };
 
@@ -86,5 +81,21 @@ public class ServerCommand implements Runnable {
     } else {
       output.error("%s", e.getMessage());
     }
+  }
+
+  private static ProcessImage createProcessImage() {
+    var processImage = new ProcessImage();
+    processImage.with(
+        tx ->
+            tx.writeHoldingRegisters(
+                registerMap -> {
+                  for (int i = 0; i < 65536; i++) {
+                    byte[] bs = new byte[2];
+                    bs[0] = (byte) ((i >> 8) & 0xFF);
+                    bs[1] = (byte) (i & 0xFF);
+                    registerMap.put(i, bs);
+                  }
+                }));
+    return processImage;
   }
 }
