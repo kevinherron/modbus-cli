@@ -16,6 +16,9 @@ jobs:
           - os: ubuntu-latest
             artifact_name: modbus-linux-x64
             artifact_path: target/modbus
+          - os: ubuntu-24.04-arm
+            artifact_name: modbus-linux-arm64
+            artifact_path: target/modbus
           - os: windows-latest
             artifact_name: modbus-windows-x64.exe
             artifact_path: target/modbus.exe
