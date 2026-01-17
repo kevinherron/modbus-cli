@@ -35,7 +35,7 @@ jobs:
           cache: 'maven'
 
       - name: Build Native Image
-        run: mvn -B package -Pnative -DskipTests
+        run: mvn -B package -Pnative
 
       - name: Rename artifact
         shell: bash
