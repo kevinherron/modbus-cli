@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-native:
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: modbus-linux-x64
+            artifact_path: target/modbus
+          - os: windows-latest
+            artifact_name: modbus-windows-x64.exe
+            artifact_path: target/modbus.exe
+          - os: macos-latest
+            artifact_name: modbus-macos-arm64
+            artifact_path: target/modbus
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up GraalVM JDK 25
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
+
+      - name: Build Native Image
+        run: mvn -B package -Pnative
+
+      - name: Rename artifact
+        shell: bash
+        run: mv ${{ matrix.artifact_path }} ${{ matrix.artifact_name }}
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact_name }}
