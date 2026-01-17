@@ -28,6 +28,7 @@
     <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
     <native.maven.plugin.version>0.11.2</native.maven.plugin.version>
     <spotless-maven-plugin.version>3.0.0</spotless-maven-plugin.version>
+    <versions-maven-plugin.version>2.20.1</versions-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -154,6 +155,21 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>${versions-maven-plugin.version}</version>
+        <configuration>
+          <ruleSet>
+            <ignoreVersions>
+              <ignoreVersion>
+                <type>regex</type>
+                <version>(?i).*[-_\.](alpha|b|beta|rc|m|ea)[-_\.]?[0-9]*</version>
+              </ignoreVersion>
+            </ignoreVersions>
+          </ruleSet>
+        </configuration>
       </plugin>
     </plugins>
   </build>
