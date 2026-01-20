@@ -211,11 +211,11 @@ modbus [global-options] client <hostname> [client-options] <subcommand> [subcomm
 
 ### Dependencies
 
-- **modbus-tcp** (2.1.0) - Modbus TCP client implementation with Netty 4.2.6
-- **picocli** (4.7.6) - Command-line interface framework
-- **picocli-codegen** (4.7.6) - Annotation processor for GraalVM compatibility
-- **slf4j-simple** (2.0.16) - Logging implementation
-- **jansi** (2.4.0) - ANSI color support for terminal output
+- **modbus-tcp** - Modbus TCP client implementation with Netty 4.2.6
+- **picocli** - Command-line interface framework
+- **picocli-codegen** - Annotation processor for GraalVM compatibility
+- **slf4j-simple** - Logging implementation
+- **jansi** - ANSI color support for terminal output
 
 ### GraalVM Configuration
 
