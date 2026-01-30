@@ -86,16 +86,27 @@ public class ServerCommand implements Runnable {
   private static ProcessImage createProcessImage() {
     var processImage = new ProcessImage();
     processImage.with(
-        tx ->
-            tx.writeHoldingRegisters(
-                registerMap -> {
-                  for (int i = 0; i < 65536; i++) {
-                    byte[] bs = new byte[2];
-                    bs[0] = (byte) ((i >> 8) & 0xFF);
-                    bs[1] = (byte) (i & 0xFF);
-                    registerMap.put(i, bs);
-                  }
-                }));
+        tx -> {
+          tx.writeHoldingRegisters(ServerCommand::initializeRegisters);
+          tx.writeInputRegisters(ServerCommand::initializeRegisters);
+          tx.writeCoils(ServerCommand::initializeBooleans);
+          tx.writeDiscreteInputs(ServerCommand::initializeBooleans);
+        });
     return processImage;
+  }
+
+  private static void initializeRegisters(java.util.Map<Integer, byte[]> registerMap) {
+    for (int i = 0; i < 65536; i++) {
+      byte[] bs = new byte[2];
+      bs[0] = (byte) ((i >> 8) & 0xFF);
+      bs[1] = (byte) (i & 0xFF);
+      registerMap.put(i, bs);
+    }
+  }
+
+  private static void initializeBooleans(java.util.Map<Integer, Boolean> booleanMap) {
+    for (int i = 0; i < 65536; i++) {
+      booleanMap.put(i, i % 2 == 0);
+    }
   }
 }
