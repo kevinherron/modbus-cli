@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilResponse;
 import com.kevinherron.modbus.cli.output.Direction;
@@ -42,7 +42,7 @@ class WriteSingleCoilCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        (ModbusTcpClient client, int unitId, OutputContext output) -> {
+        (ModbusClient client, int unitId, OutputContext output) -> {
           boolean coilValue = ValueParser.parseCoilValue(value);
 
           var request = new WriteSingleCoilRequest(address, coilValue);

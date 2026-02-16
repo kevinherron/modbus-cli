@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
 import com.kevinherron.modbus.cli.output.OutputContext;
@@ -90,7 +90,7 @@ public class ScanCommand implements Runnable {
     var results = new ArrayList<ScanResult>();
 
     clientCommand.runWithClient(
-        (ModbusTcpClient client, int unitId, OutputContext output) -> {
+        (ModbusClient client, int unitId, OutputContext output) -> {
           for (int i = start; i < start + quantity; i += step) {
             int windowSize = Math.min(size, start + quantity - i);
             if (windowSize <= 0) {

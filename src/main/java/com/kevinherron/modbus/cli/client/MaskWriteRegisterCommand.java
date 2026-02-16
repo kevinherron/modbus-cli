@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.MaskWriteRegisterRequest;
 import com.digitalpetri.modbus.pdu.MaskWriteRegisterResponse;
 import com.kevinherron.modbus.cli.output.Direction;
@@ -65,7 +65,7 @@ class MaskWriteRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        (ModbusTcpClient client, int unitId, OutputContext output) -> {
+        (ModbusClient client, int unitId, OutputContext output) -> {
           int andMaskValue = ValueParser.parseHexValue(andMask);
           int orMaskValue = ValueParser.parseHexValue(orMask);
 

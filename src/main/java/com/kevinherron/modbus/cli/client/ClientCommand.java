@@ -1,5 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.client.ModbusClientConfig;
 import com.digitalpetri.modbus.client.ModbusTcpClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
@@ -82,7 +83,7 @@ public class ClientCommand {
    *
    * @return a configured but not yet connected {@link ModbusTcpClient}.
    */
-  public ModbusTcpClient createClient() {
+  public ModbusTcpClient createTcpClient() {
     var transport =
         NettyTcpClientTransport.create(
             cfg -> {
@@ -111,7 +112,7 @@ public class ClientCommand {
 
     output.info("Hostname: %s:%d, Unit ID: %d", hostname, port, unitId);
 
-    ModbusTcpClient client = createClient();
+    ModbusClient client = createTcpClient();
     try {
       client.connect();
       command.run(client, unitId, output);
@@ -144,7 +145,7 @@ public class ClientCommand {
 
     output.info("Hostname: %s:%d, Unit ID: %d", hostname, port, unitId);
 
-    ModbusTcpClient client = createClient();
+    ModbusClient client = createTcpClient();
     try {
       client.connect();
 
@@ -208,11 +209,11 @@ public class ClientCommand {
     /**
      * Executes a Modbus operation.
      *
-     * @param client the connected Modbus TCP client.
+     * @param client the connected Modbus client.
      * @param unitId the unit/slave identifier for the request.
      * @param output the output context for displaying results.
      * @throws ModbusException if the Modbus operation fails.
      */
-    void run(ModbusTcpClient client, int unitId, OutputContext output) throws ModbusException;
+    void run(ModbusClient client, int unitId, OutputContext output) throws ModbusException;
   }
 }
