@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
@@ -71,7 +71,7 @@ class ReadHoldingRegistersCommand implements Runnable {
    * @param output the output context for rendering protocol messages and results.
    * @throws ModbusException if the Modbus operation fails.
    */
-  private void executeRead(ModbusTcpClient client, int unitId, OutputContext output)
+  private void executeRead(ModbusClient client, int unitId, OutputContext output)
       throws ModbusException {
 
     var request = new ReadHoldingRegistersRequest(address, quantity);

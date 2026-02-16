@@ -1,0 +1,46 @@
+[
+  {
+    "name": "com.fazecast.jSerialComm.SerialPort",
+    "allDeclaredFields": true,
+    "allPublicFields": true,
+    "methods": [
+      { "name": "<init>", "parameterTypes": [] },
+      { "name": "uninitializeLibrary", "parameterTypes": [] },
+      { "name": "getCommPortsNative", "parameterTypes": [] },
+      { "name": "getNativeLibraryVersion", "parameterTypes": [] },
+      { "name": "retrievePortDetails", "parameterTypes": [] },
+      { "name": "openPortNative", "parameterTypes": [] },
+      { "name": "closePortNative", "parameterTypes": ["long"] },
+      { "name": "configPort", "parameterTypes": ["long"] },
+      { "name": "flushRxTxBuffers", "parameterTypes": ["long"] },
+      { "name": "waitForEvent", "parameterTypes": ["long"] },
+      { "name": "bytesAvailable", "parameterTypes": ["long"] },
+      { "name": "bytesAwaitingWrite", "parameterTypes": ["long"] },
+      { "name": "readBytes", "parameterTypes": ["long", "byte[]", "int", "int", "int", "int"] },
+      { "name": "writeBytes", "parameterTypes": ["long", "byte[]", "int", "int", "int"] },
+      { "name": "setEventListeningStatus", "parameterTypes": ["long", "boolean"] },
+      { "name": "setBreak", "parameterTypes": ["long"] },
+      { "name": "clearBreak", "parameterTypes": ["long"] },
+      { "name": "setRTS", "parameterTypes": ["long"] },
+      { "name": "clearRTS", "parameterTypes": ["long"] },
+      { "name": "setDTR", "parameterTypes": ["long"] },
+      { "name": "clearDTR", "parameterTypes": ["long"] },
+      { "name": "setDTRandRTS", "parameterTypes": ["long", "boolean", "boolean"] },
+      { "name": "getCTS", "parameterTypes": ["long"] },
+      { "name": "getDSR", "parameterTypes": ["long"] },
+      { "name": "getDCD", "parameterTypes": ["long"] },
+      { "name": "getDTR", "parameterTypes": ["long"] },
+      { "name": "getRTS", "parameterTypes": ["long"] },
+      { "name": "getRI", "parameterTypes": ["long"] },
+      { "name": "quickConfig", "parameterTypes": ["long", "int", "int", "int"] },
+      { "name": "getLastErrorLocation", "parameterTypes": ["long"] },
+      { "name": "getLastErrorCode", "parameterTypes": ["long"] }
+    ]
+  },
+  {
+    "name": "com.fazecast.jSerialComm.SerialPortThreadFactory",
+    "methods": [
+      { "name": "get", "parameterTypes": [] }
+    ]
+  }
+]

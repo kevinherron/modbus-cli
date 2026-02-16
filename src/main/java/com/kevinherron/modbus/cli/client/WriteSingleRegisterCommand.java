@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterResponse;
 import com.kevinherron.modbus.cli.output.Direction;
@@ -41,7 +41,7 @@ class WriteSingleRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        (ModbusTcpClient client, int unitId, OutputContext output) -> {
+        (ModbusClient client, int unitId, OutputContext output) -> {
           int registerValue = ValueParser.parseRegisterValue(value);
 
           var request = new WriteSingleRegisterRequest(address, registerValue);

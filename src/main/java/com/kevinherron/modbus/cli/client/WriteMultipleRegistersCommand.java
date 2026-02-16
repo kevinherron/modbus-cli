@@ -1,6 +1,6 @@
 package com.kevinherron.modbus.cli.client;
 
-import com.digitalpetri.modbus.client.ModbusTcpClient;
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteMultipleRegistersRequest;
 import com.digitalpetri.modbus.pdu.WriteMultipleRegistersResponse;
 import com.kevinherron.modbus.cli.output.Direction;
@@ -53,7 +53,7 @@ class WriteMultipleRegistersCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        (ModbusTcpClient client, int unitId, OutputContext output) -> {
+        (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = values.split(",");
           if (valueStrings.length != quantity) {
             throw new IllegalArgumentException(

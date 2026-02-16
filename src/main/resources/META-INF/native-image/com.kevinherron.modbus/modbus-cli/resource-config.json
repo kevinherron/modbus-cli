@@ -1,0 +1,24 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "Linux/.*\\.so$"
+      },
+      {
+        "pattern": "Windows/.*\\.dll$"
+      },
+      {
+        "pattern": "OSX/.*\\.jnilib$"
+      },
+      {
+        "pattern": "FreeBSD/.*\\.so$"
+      },
+      {
+        "pattern": "OpenBSD/.*\\.so$"
+      },
+      {
+        "pattern": "Solaris/.*\\.so$"
+      }
+    ]
+  }
+}

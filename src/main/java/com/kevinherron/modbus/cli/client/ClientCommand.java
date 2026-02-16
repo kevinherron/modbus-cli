@@ -1,26 +1,33 @@
 package com.kevinherron.modbus.cli.client;
 
+import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.client.ModbusClientConfig;
+import com.digitalpetri.modbus.client.ModbusRtuClient;
 import com.digitalpetri.modbus.client.ModbusTcpClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
 import com.digitalpetri.modbus.exceptions.ModbusExecutionException;
+import com.digitalpetri.modbus.serial.client.SerialPortClientTransport;
 import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport;
 import com.kevinherron.modbus.cli.ModbusCommand;
+import com.kevinherron.modbus.cli.SerialPortOptions;
 import com.kevinherron.modbus.cli.output.OutputContext;
+import com.kevinherron.modbus.cli.util.EndpointParser;
+import com.kevinherron.modbus.cli.util.EndpointParser.Endpoint;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
 /**
- * Abstract parent command for all Modbus TCP client operations.
+ * Abstract parent command for all Modbus client operations.
  *
- * <p>This command provides shared connection parameters (hostname, port, unit-id, timeout) and
- * client lifecycle management for its subcommands. It serves as the entry point for the "client"
- * command group, which includes:
+ * <p>This command provides shared connection parameters for TCP and RTU transports, plus client
+ * lifecycle management for its subcommands. It serves as the entry point for the "client" command
+ * group, which includes:
  *
  * <ul>
  *   <li>{@link ReadCoilsCommand} (rc) - Read coils (function code 01)
@@ -56,13 +63,16 @@ public class ClientCommand {
 
   @ParentCommand ModbusCommand parent;
 
-  @Parameters(index = "0", description = "hostname or IP address")
-  String hostname;
+  @Parameters(
+      index = "0",
+      description =
+          "endpoint (hostname, tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
+  String endpoint;
 
   @Option(
       names = {"-p", "--port"},
-      description = "port number")
-  int port = 502;
+      description = "TCP port number (default: 502)")
+  Integer port;
 
   @Option(
       names = {"--unit-id"},
@@ -74,20 +84,22 @@ public class ClientCommand {
       description = "request timeout in milliseconds (default: 5000ms)")
   int timeout = 5000;
 
+  @Mixin SerialPortOptions serialOptions;
+
   /**
-   * Creates a new Modbus TCP client configured with the command's connection parameters.
+   * Creates a new Modbus TCP client configured with the resolved connection parameters.
    *
    * <p>The client uses {@link NettyTcpClientTransport} with non-persistent connections, meaning
    * each connect/disconnect cycle establishes a new TCP connection.
    *
    * @return a configured but not yet connected {@link ModbusTcpClient}.
    */
-  public ModbusTcpClient createClient() {
+  public ModbusTcpClient createTcpClient(String hostname, int tcpPort) {
     var transport =
         NettyTcpClientTransport.create(
             cfg -> {
               cfg.hostname = hostname;
-              cfg.port = port;
+              cfg.port = tcpPort;
               cfg.connectPersistent = false;
             });
 
@@ -95,6 +107,36 @@ public class ClientCommand {
         ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
 
     return new ModbusTcpClient(config, transport);
+  }
+
+  public ModbusRtuClient createRtuClient(String serialPort) {
+    int resolvedDataBits = serialOptions.resolveDataBits();
+    int resolvedStopBits = serialOptions.resolveStopBits();
+    int resolvedParity = serialOptions.resolveParity();
+
+    var transport =
+        SerialPortClientTransport.create(
+            cfg -> {
+              cfg.serialPort = serialPort;
+              cfg.baudRate = serialOptions.baudRate;
+              cfg.dataBits = resolvedDataBits;
+              cfg.stopBits = resolvedStopBits;
+              cfg.parity = resolvedParity;
+            });
+
+    serialOptions.configureRs485(transport.getSerialPort());
+
+    ModbusClientConfig config =
+        ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
+
+    return new ModbusRtuClient(config, transport);
+  }
+
+  public ModbusClient createClient(Endpoint resolvedEndpoint) {
+    return switch (resolvedEndpoint) {
+      case Endpoint.Tcp tcp -> createTcpClient(tcp.hostname(), tcp.port());
+      case Endpoint.Rtu rtu -> createRtuClient(rtu.serialPort());
+    };
   }
 
   /**
@@ -107,22 +149,7 @@ public class ClientCommand {
    * @param command the Modbus operation to execute.
    */
   public void runWithClient(ClientRunnable command) {
-    OutputContext output = parent.createOutputContext();
-
-    output.info("Hostname: %s:%d, Unit ID: %d", hostname, port, unitId);
-
-    ModbusTcpClient client = createClient();
-    try {
-      client.connect();
-      command.run(client, unitId, output);
-    } catch (Exception e) {
-      handleException(e, output);
-    } finally {
-      try {
-        client.disconnect();
-      } catch (ModbusExecutionException ignored) {
-      }
-    }
+    executeWithClient((client, output) -> command.run(client, unitId, output));
   }
 
   /**
@@ -140,33 +167,62 @@ public class ClientCommand {
    * @param intervalMs the target delay in milliseconds between the start of each iteration.
    */
   public void runWithClientPolling(ClientRunnable command, int count, int intervalMs) {
+    executeWithClient(
+        (client, output) -> {
+          int iteration = 0;
+          while (count == 0 || iteration < count) {
+            iteration++;
+            output.setIteration(iteration);
+
+            long start = System.nanoTime();
+            try {
+              command.run(client, unitId, output);
+            } catch (Exception e) {
+              handleException(e, output);
+            }
+
+            long duration = System.nanoTime() - start;
+
+            // Sleep between iterations, but not after the last one
+            if (count == 0 || iteration < count) {
+              Thread.sleep(Math.max(0, intervalMs - Duration.ofNanos(duration).toMillis()));
+            }
+          }
+        });
+  }
+
+  /**
+   * Handles client setup, connection lifecycle, and error handling for all Modbus operations.
+   *
+   * <p>This method consolidates the shared logic: creating the output context, parsing the
+   * endpoint, creating and connecting the client, and ensuring proper disconnection. The provided
+   * action is invoked with the connected client and output context.
+   *
+   * @param action the operation to execute with the connected client.
+   */
+  private void executeWithClient(ClientAction action) {
     OutputContext output = parent.createOutputContext();
 
-    output.info("Hostname: %s:%d, Unit ID: %d", hostname, port, unitId);
+    Endpoint resolvedEndpoint;
+    try {
+      resolvedEndpoint = EndpointParser.parse(endpoint, port);
+    } catch (Exception e) {
+      handleException(e, output);
+      return;
+    }
 
-    ModbusTcpClient client = createClient();
+    ModbusClient client;
+    try {
+      client = createClient(resolvedEndpoint);
+    } catch (Exception e) {
+      handleException(e, output);
+      return;
+    }
+
+    outputEndpointInfo(output, resolvedEndpoint);
     try {
       client.connect();
-
-      int iteration = 0;
-      while (count == 0 || iteration < count) {
-        iteration++;
-        output.setIteration(iteration);
-
-        long start = System.nanoTime();
-        try {
-          command.run(client, unitId, output);
-        } catch (Exception e) {
-          handleException(e, output);
-        }
-
-        long duration = System.nanoTime() - start;
-
-        // Sleep between iterations, but not after the last one
-        if (count == 0 || iteration < count) {
-          Thread.sleep(Math.max(0, intervalMs - Duration.ofNanos(duration).toMillis()));
-        }
-      }
+      action.execute(client, output);
     } catch (Exception e) {
       handleException(e, output);
     } finally {
@@ -175,6 +231,22 @@ public class ClientCommand {
       } catch (ModbusExecutionException ignored) {
       }
     }
+  }
+
+  /**
+   * Internal callback for operations executed within the client lifecycle managed by {@link
+   * #executeWithClient(ClientAction)}.
+   */
+  private interface ClientAction {
+
+    /**
+     * Executes an operation with a connected client.
+     *
+     * @param client the connected Modbus client.
+     * @param output the output context for displaying results.
+     * @throws Exception if the operation fails.
+     */
+    void execute(ModbusClient client, OutputContext output) throws Exception;
   }
 
   /**
@@ -196,6 +268,20 @@ public class ClientCommand {
     }
   }
 
+  private void outputEndpointInfo(OutputContext output, Endpoint resolvedEndpoint) {
+    switch (resolvedEndpoint) {
+      case Endpoint.Tcp tcp ->
+          output.info("Hostname: %s:%d, Unit ID: %d", tcp.hostname(), tcp.port(), unitId);
+      case Endpoint.Rtu rtu -> {
+        if (serialOptions.rs485) {
+          output.info("Serial Port: %s, Unit ID: %d, RS-485 mode", rtu.serialPort(), unitId);
+        } else {
+          output.info("Serial Port: %s, Unit ID: %d", rtu.serialPort(), unitId);
+        }
+      }
+    }
+  }
+
   /**
    * Callback interface for Modbus operations executed within the client lifecycle.
    *
@@ -208,11 +294,11 @@ public class ClientCommand {
     /**
      * Executes a Modbus operation.
      *
-     * @param client the connected Modbus TCP client.
+     * @param client the connected Modbus client.
      * @param unitId the unit/slave identifier for the request.
      * @param output the output context for displaying results.
      * @throws ModbusException if the Modbus operation fails.
      */
-    void run(ModbusTcpClient client, int unitId, OutputContext output) throws ModbusException;
+    void run(ModbusClient client, int unitId, OutputContext output) throws ModbusException;
   }
 }
