@@ -6,7 +6,7 @@
 
   <groupId>com.kevinherron.modbus</groupId>
   <artifactId>modbus-cli</artifactId>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
 
   <properties>
     <maven.compiler.source>25</maven.compiler.source>
