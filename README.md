@@ -1,11 +1,11 @@
 # Modbus CLI
 
-A command-line interface for Modbus TCP operations, built with Java 25 and compilable to a native
-executable using GraalVM.
+A command-line interface for Modbus TCP and RTU serial operations, built with Java 25 and compilable
+to a native executable using GraalVM.
 
 ## Quick Examples
 
-**Start a test server:**
+**Start a test server (TCP):**
 
 ```bash
 $ modbus server
@@ -14,6 +14,13 @@ Modbus server started on 0.0.0.0:502
 
 The server initializes with 65536 holding registers, each pre-populated with its address as a value.
 Leave this running in one terminal while trying the client examples below in another.
+
+**Start a test server (RTU serial):**
+
+```bash
+$ modbus server rtu:/dev/ttyUSB0 --baud 19200
+Modbus RTU server started on /dev/ttyUSB0
+```
 
 **Read holding registers:**
 
@@ -73,10 +80,28 @@ $ modbus --format=json client localhost rhr 0 10 -c 5 | jq -c 'select(.type == "
 {"timestamp":"2025-11-02T23:12:41.088714Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
 ```
 
+**Read holding registers over RTU serial:**
+
+```bash
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 rhr 0 10
+Serial Port: /dev/ttyUSB0, Unit ID: 1
+...
+```
+
+**Use RS-485 mode:**
+
+```bash
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 --rs485 --rs485-rts-high rhr 0 10
+Serial Port: /dev/ttyUSB0, Unit ID: 1, RS-485 mode
+...
+```
+
 ## Features
 
 - **Client Commands**: Read/write coils, discrete inputs, holding registers, and input registers
-- **Modbus TCP Protocol**: Full support for standard Modbus function codes
+- **Modbus TCP and RTU**: Full support for Modbus TCP and Modbus RTU over serial (RS-232/RS-485)
+- **Flexible Endpoint Format**: Connect via `hostname`, `tcp:hostname[:port]`, or `rtu:/dev/ttyUSB0`
+- **Serial Port Configuration**: Baud rate, data bits, parity, stop bits, and RS-485 mode options
 - **Multiple Output Formats**: Human-readable tables (default) or JSON for machine parsing
 - **Flexible Scanning**: Scan register ranges with configurable window size and step
 - **GraalVM Native Image**: Compile to a fast-starting, low-memory native executable
@@ -161,8 +186,25 @@ java -jar target/modbus-cli-0.1-SNAPSHOT.jar [command] [options]
 ### Command Structure
 
 ```
-modbus [global-options] client <hostname> [client-options] <subcommand> [subcommand-options]
+modbus [global-options] client <endpoint> [client-options] <subcommand> [subcommand-options]
+modbus [global-options] server [endpoint] [server-options]
 ```
+
+### Endpoint Formats
+
+The `<endpoint>` parameter accepts several formats:
+
+| Format                  | Example             | Description               |
+|-------------------------|---------------------|---------------------------|
+| `hostname`              | `localhost`         | TCP with default port 502 |
+| `tcp:hostname[:port]`   | `tcp:myhost:1502`   | Explicit TCP              |
+| `tcp://hostname[:port]` | `tcp://myhost:1502` | TCP (URI-style)           |
+| `rtu:<serial-port>`     | `rtu:/dev/ttyUSB0`  | RTU serial (Linux/macOS)  |
+| `rtu:<serial-port>`     | `rtu:COM3`          | RTU serial (Windows)      |
+
+IPv6 addresses are supported with bracket notation: `tcp:[::1]:1502`
+
+Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 ### Available Subcommands
 
@@ -197,9 +239,25 @@ modbus [global-options] client <hostname> [client-options] <subcommand> [subcomm
 
 **Client Options:**
 
-- `-p, --port <port>` - Port number (default: 502)
+- `-p, --port <port>` - Port number, TCP only (default: 502)
 - `--unit-id <id>` - Unit/slave ID (default: 1)
 - `-t, --timeout <ms>` - Request timeout in milliseconds (default: 5000)
+
+**Serial Port Options** (apply to both client and server when using `rtu:` endpoints):
+
+- `--baud <rate>` - Baud rate (default: 9600)
+- `--data-bits <5|6|7|8>` - Data bits (default: 8)
+- `--parity <N|E|O>` - Parity: none, even, or odd (default: N)
+- `--stop-bits <1|2>` - Stop bits (default: 1)
+
+**RS-485 Options** (require `--rs485` to enable):
+
+- `--rs485` - Enable RS-485 mode
+- `--rs485-rts-high` - RTS active high
+- `--rs485-termination` - Enable bus termination
+- `--rs485-rx-during-tx` - Enable receiving during transmission
+- `--rs485-delay-before <us>` - Delay before send in microseconds (default: 0)
+- `--rs485-delay-after <us>` - Delay after send in microseconds (default: 0)
 
 **Scan Options:**
 
@@ -211,7 +269,7 @@ modbus [global-options] client <hostname> [client-options] <subcommand> [subcomm
 
 ### Dependencies
 
-- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP client implementation
+- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP and RTU client/server implementation
 - [**picocli**](https://github.com/remkop/picocli) - Command-line interface framework
 - [**jansi**](https://github.com/fusesource/jansi) - ANSI color support for terminal output
 
@@ -222,8 +280,8 @@ The project uses:
 1. **Picocli Codegen Annotation Processor** - Automatically generates reflection configuration for
    all `@Command`, `@Option`, and `@Parameters` annotated classes during compilation
 2. **Native Maven Plugin** - Handles native image compilation with the `native` profile
-3. **Custom Native Image Properties** - Additional configuration for Netty, SLF4J, and Jansi
-   initialization
+3. **Custom Native Image Properties** - Additional configuration for Netty, SLF4J, Jansi, and
+   jSerialComm initialization (JNI config, native library resources, runtime initialization)
 
 Configuration files are located at:
 
@@ -239,14 +297,17 @@ modbus-cli/
 ├── src/main/java/com/kevinherron/modbus/cli/
 │   ├── Modbus.java              # Main entry point
 │   ├── ModbusCommand.java       # Root command with global options
+│   ├── SerialPortOptions.java   # Serial port config mixin (baud, parity, RS-485)
 │   ├── client/
-│   │   ├── ClientCommand.java   # Client base command
+│   │   ├── ClientCommand.java   # Client base command (TCP + RTU)
 │   │   ├── Read*.java          # Read operations (rc, rdi, rhr, rir)
 │   │   ├── Write*.java         # Write operations (wsc, wmc, wsr, wmr, mwr)
 │   │   ├── ScanCommand.java    # Scan operation with sliding window
 │   │   └── ReadWriteMultipleRegistersCommand.java  # rwmr operation
 │   ├── server/
-│   │   └── ServerCommand.java  # Server command (future)
+│   │   └── ServerCommand.java  # Test server (TCP + RTU)
+│   ├── util/
+│   │   └── EndpointParser.java # Parses tcp:/rtu: endpoint strings
 │   └── output/
 │       ├── OutputFormat.java    # Output format enum (HUMAN, JSON)
 │       ├── OutputFormatter.java # Formatter interface
@@ -258,7 +319,9 @@ modbus-cli/
 │       └── ...                  # Supporting classes
 └── src/main/resources/META-INF/native-image/
     └── com.kevinherron.modbus/modbus-cli/
-        └── native-image.properties
+        ├── native-image.properties
+        ├── jni-config.json      # JNI config for jSerialComm
+        └── resource-config.json # Native lib resources for jSerialComm
 ```
 
 ### Building from Source
