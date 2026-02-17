@@ -23,29 +23,26 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
-@Command(name = "server")
+/**
+ * Server command for Modbus operations.
+ */
 public class ServerCommand implements Runnable {
 
-  @ParentCommand ModbusCommand parent;
+  @ParentCommand
+  ModbusCommand parent;
 
-  @Parameters(
-      index = "0",
-      defaultValue = "tcp:0.0.0.0",
-      description =
-          "endpoint (tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
+  @Parameters(index = "0", defaultValue = "tcp:0.0.0.0", description = "endpoint (tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
   String endpoint;
 
-  @Option(
-      names = {"-p", "--port"},
-      description = "TCP port number (default: 502)")
+  @Option(names = { "-p", "--port" }, description = "TCP port number (default: 502)")
   Integer port;
 
-  @Option(
-      names = {"--separate-units"},
-      description = "treat each unit ID as a separate device with its own process image")
+  @Option(names = {
+      "--separate-units" }, description = "treat each unit ID as a separate device with its own process image")
   boolean separateUnits = false;
 
-  @Mixin SerialPortOptions serialOptions;
+  @Mixin
+  SerialPortOptions serialOptions;
 
   @Override
   public void run() {
@@ -71,16 +68,24 @@ public class ServerCommand implements Runnable {
     }
   }
 
+  /**
+   * Starts a Modbus TCP server using the given endpoint and services.
+   *
+   * @param tcp      The TCP endpoint information.
+   * @param services The Modbus services to be used by the server.
+   * @param output   The context for outputting messages.
+   * @throws ExecutionException   if an error occurs during server execution.
+   * @throws InterruptedException if the thread is interrupted while waiting.
+   */
   private void runTcpServer(
       Endpoint.Tcp tcp, ReadWriteModbusServices services, OutputContext output)
       throws ExecutionException, InterruptedException {
 
-    NettyTcpServerTransport transport =
-        NettyTcpServerTransport.create(
-            cfg -> {
-              cfg.bindAddress = tcp.hostname();
-              cfg.port = tcp.port();
-            });
+    NettyTcpServerTransport transport = NettyTcpServerTransport.create(
+        cfg -> {
+          cfg.bindAddress = tcp.hostname();
+          cfg.port = tcp.port();
+        });
 
     var server = ModbusTcpServer.create(transport, services);
     server.start();
@@ -90,6 +95,15 @@ public class ServerCommand implements Runnable {
     Thread.sleep(Long.MAX_VALUE);
   }
 
+  /**
+   * Starts a Modbus RTU server using the given endpoint and services.
+   *
+   * @param rtu      The RTU endpoint information.
+   * @param services The Modbus services to be used by the server.
+   * @param output   The context for outputting messages.
+   * @throws ExecutionException   if an error occurs during server execution.
+   * @throws InterruptedException if the thread is interrupted while waiting.
+   */
   private void runRtuServer(
       Endpoint.Rtu rtu, ReadWriteModbusServices services, OutputContext output)
       throws ExecutionException, InterruptedException {
@@ -98,15 +112,14 @@ public class ServerCommand implements Runnable {
     int resolvedStopBits = serialOptions.resolveStopBits();
     int resolvedParity = serialOptions.resolveParity();
 
-    var transport =
-        SerialPortServerTransport.create(
-            cfg -> {
-              cfg.serialPort = rtu.serialPort();
-              cfg.baudRate = serialOptions.baudRate;
-              cfg.dataBits = resolvedDataBits;
-              cfg.stopBits = resolvedStopBits;
-              cfg.parity = resolvedParity;
-            });
+    var transport = SerialPortServerTransport.create(
+        cfg -> {
+          cfg.serialPort = rtu.serialPort();
+          cfg.baudRate = serialOptions.baudRate;
+          cfg.dataBits = resolvedDataBits;
+          cfg.stopBits = resolvedStopBits;
+          cfg.parity = resolvedParity;
+        });
 
     serialOptions.configureRs485(transport.getSerialPort());
 
@@ -122,6 +135,12 @@ public class ServerCommand implements Runnable {
     Thread.sleep(Long.MAX_VALUE);
   }
 
+  /**
+   * Creates Modbus services with a shared or separate process image based on the
+   * configuration.
+   *
+   * @return A new instance of ReadWriteModbusServices.
+   */
   private ReadWriteModbusServices createServices() {
     return new ReadWriteModbusServices() {
       private static final int SHARED_KEY = 0;
@@ -135,6 +154,13 @@ public class ServerCommand implements Runnable {
     };
   }
 
+  /**
+   * Handles exceptions by logging the appropriate message based on the verbose
+   * flag.
+   *
+   * @param e      The exception to be handled.
+   * @param output The context for outputting messages.
+   */
   private void handleException(Exception e, OutputContext output) {
     if (parent.verbose) {
       var sw = new StringWriter();
@@ -145,6 +171,12 @@ public class ServerCommand implements Runnable {
     }
   }
 
+  /**
+   * Creates a ProcessImage with initialized registers and coils.
+   *
+   * @return A new ProcessImage instance with holding and input registers, as well
+   *         as coils and discrete inputs initialized.
+   */
   private static ProcessImage createProcessImage() {
     var processImage = new ProcessImage();
     processImage.with(
@@ -157,6 +189,11 @@ public class ServerCommand implements Runnable {
     return processImage;
   }
 
+  /**
+   * Initializes the holding registers in the process image.
+   *
+   * @param registerMap The map where the holding registers will be stored.
+   */
   private static void initializeRegisters(java.util.Map<Integer, byte[]> registerMap) {
     for (int i = 0; i < 65536; i++) {
       byte[] bs = new byte[2];
@@ -166,6 +203,12 @@ public class ServerCommand implements Runnable {
     }
   }
 
+  /**
+   * Initializes the coils in the process image with alternating true and false
+   * values.
+   *
+   * @param booleanMap The map where the coil states will be stored.
+   */
   private static void initializeBooleans(java.util.Map<Integer, Boolean> booleanMap) {
     for (int i = 0; i < 65536; i++) {
       booleanMap.put(i, i % 2 == 0);
