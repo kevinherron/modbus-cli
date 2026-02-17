@@ -128,4 +128,4 @@ only for parameters, fields, or return types that genuinely accept or return nul
 ## Other
 
 For any coding practices not explicitly covered by these conventions, defer to established Java best
-practices and community standards. This codebase uses Java 17.
+practices and community standards. This codebase uses Java 25.
