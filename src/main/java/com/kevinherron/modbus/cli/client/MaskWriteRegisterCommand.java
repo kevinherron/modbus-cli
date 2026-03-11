@@ -31,20 +31,21 @@ import picocli.CommandLine.ParentCommand;
  *   <li>Toggling specific bits: combine `AND` and `OR` masks appropriately
  * </ul>
  *
- * <p>This command is invoked using {@code mwr} (e.g., {@code modbus client mwr 0 0xFF00 0x00FF}).
+ * <p>This command is invoked using {@code mask-write-register} (e.g., {@code modbus client
+ * mask-write-register 0 0xFF00 0x00FF}).
  *
  * @see WriteSingleRegisterCommand for writing an entire register value (function code 06)
  * @see WriteMultipleRegistersCommand for writing multiple registers (function code 16)
  */
 @Command(
-    name = "mwr",
-    aliases = "mask-write-register",
+    name = "mask-write-register",
+    aliases = "mwr",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 22 (Mask Write Register).",
       "Mutating and idempotent when repeated with the same masks.",
-      "Example: modbus client <endpoint> mwr 0 0xFF00 0x00FF"
+      "Example: modbus client <endpoint> mask-write-register 0 0xFF00 0x00FF"
     })
 class MaskWriteRegisterCommand implements Runnable {
 
@@ -75,7 +76,7 @@ class MaskWriteRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        "mwr",
+        "mask-write-register",
         (ModbusClient client, int unitId, OutputContext output) -> {
           int andMaskValue = ValueParser.parseHexValue(andMask);
           int orMaskValue = ValueParser.parseHexValue(orMask);

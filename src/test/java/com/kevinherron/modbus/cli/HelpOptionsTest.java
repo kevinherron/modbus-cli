@@ -64,14 +64,15 @@ class HelpOptionsTest {
 
   @Test
   void subcommandHelpOptionPrintsUsage() {
-    var result = CliTestRunner.execute("client", "localhost", "rhr", "--help");
+    var result = CliTestRunner.execute("client", "localhost", "read-holding-registers", "--help");
 
     assertEquals(0, result.exitCode());
     assertTrue(result.stdout().contains("Modbus function code 03 (Read Holding Registers)."));
     assertTrue(result.stdout().contains("Read-only and idempotent; safe to repeat"));
-    assertTrue(result.stdout().contains("Example: modbus client <endpoint> rhr 0 10"));
+    assertTrue(
+        result.stdout().contains("Example: modbus client <endpoint> read-holding-registers 0 10"));
     assertTrue(result.stdout().contains("Usage: modbus client"));
-    assertTrue(result.stdout().contains("rhr"));
+    assertTrue(result.stdout().contains("read-holding-registers"));
     assertTrue(result.stdout().contains("-h, --help"));
     assertTrue(result.stdout().contains("-V, --version"));
     assertTrue(result.stderr().isEmpty());
@@ -79,7 +80,8 @@ class HelpOptionsTest {
 
   @Test
   void subcommandVersionOptionPrintsVersion() {
-    var result = CliTestRunner.execute("client", "localhost", "rhr", "--version");
+    var result =
+        CliTestRunner.execute("client", "localhost", "read-holding-registers", "--version");
 
     assertEquals(0, result.exitCode());
     assertTrue(result.stdout().contains("modbus-cli "));
@@ -88,18 +90,18 @@ class HelpOptionsTest {
 
   @ParameterizedTest
   @CsvSource({
-    "read-coils, Read Coils",
-    "read-discrete-inputs, Read Discrete Inputs",
-    "read-holding-registers, Read Holding Registers",
-    "read-input-registers, Read Input Registers",
-    "write-single-coil, Write Single Coil",
-    "write-multiple-coils, Write Multiple Coils",
-    "write-single-register, Write Single Register",
-    "write-multiple-registers, Write Multiple Registers",
-    "mask-write-register, Mask Write Register",
-    "read-write-multiple-registers, Read/Write Multiple Registers"
+    "rc, Read Coils",
+    "rdi, Read Discrete Inputs",
+    "rhr, Read Holding Registers",
+    "rir, Read Input Registers",
+    "wsc, Write Single Coil",
+    "wmc, Write Multiple Coils",
+    "wsr, Write Single Register",
+    "wmr, Write Multiple Registers",
+    "mwr, Mask Write Register",
+    "rwmr, Read/Write Multiple Registers"
   })
-  void longFormSubcommandAliasPrintsUsage(String alias, String description) {
+  void shortFormSubcommandAliasPrintsUsage(String alias, String description) {
     var result = CliTestRunner.execute("client", "localhost", alias, "--help");
 
     assertEquals(0, result.exitCode());
@@ -113,16 +115,16 @@ class HelpOptionsTest {
   @ParameterizedTest
   @CsvSource(
       value = {
-        "rc|Modbus function code 01 (Read Coils).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> rc 0 10",
-        "rdi|Modbus function code 02 (Read Discrete Inputs).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> rdi 0 10",
-        "rhr|Modbus function code 03 (Read Holding Registers).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> rhr 0 10",
-        "rir|Modbus function code 04 (Read Input Registers).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> rir 0 10",
-        "wsc|Modbus function code 05 (Write Single Coil).|Mutating and idempotent when repeated with the same value.|Example: modbus client <endpoint> wsc 0 true",
-        "wsr|Modbus function code 06 (Write Single Register).|Mutating and idempotent when repeated with the same value.|Example: modbus client <endpoint> wsr 0 1234",
-        "wmc|Modbus function code 15 (Write Multiple Coils).|Mutating and idempotent when repeated with the same values.|Example: modbus client <endpoint> wmc 0 4 true,false,1,0",
-        "wmr|Modbus function code 16 (Write Multiple Registers).|Mutating and idempotent when repeated with the same values.|Example: modbus client <endpoint> wmr 0 3 100,0x64,200",
-        "mwr|Modbus function code 22 (Mask Write Register).|Mutating and idempotent when repeated with the same masks.|Example: modbus client <endpoint> mwr 0 0xFF00 0x00FF",
-        "rwmr|Modbus function code 23 (Read/Write Multiple Registers).|Mutating and idempotent when repeated with the same write payload.|Example: modbus client <endpoint> rwmr 0 5 10 3 100,200,300",
+        "read-coils|Modbus function code 01 (Read Coils).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> read-coils 0 10",
+        "read-discrete-inputs|Modbus function code 02 (Read Discrete Inputs).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> read-discrete-inputs 0 10",
+        "read-holding-registers|Modbus function code 03 (Read Holding Registers).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> read-holding-registers 0 10",
+        "read-input-registers|Modbus function code 04 (Read Input Registers).|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> read-input-registers 0 10",
+        "write-single-coil|Modbus function code 05 (Write Single Coil).|Mutating and idempotent when repeated with the same value.|Example: modbus client <endpoint> write-single-coil 0 true",
+        "write-single-register|Modbus function code 06 (Write Single Register).|Mutating and idempotent when repeated with the same value.|Example: modbus client <endpoint> write-single-register 0 1234",
+        "write-multiple-coils|Modbus function code 15 (Write Multiple Coils).|Mutating and idempotent when repeated with the same values.|Example: modbus client <endpoint> write-multiple-coils 0 4 true,false,1,0",
+        "write-multiple-registers|Modbus function code 16 (Write Multiple Registers).|Mutating and idempotent when repeated with the same values.|Example: modbus client <endpoint> write-multiple-registers 0 3 100,0x64,200",
+        "mask-write-register|Modbus function code 22 (Mask Write Register).|Mutating and idempotent when repeated with the same masks.|Example: modbus client <endpoint> mask-write-register 0 0xFF00 0x00FF",
+        "read-write-multiple-registers|Modbus function code 23 (Read/Write Multiple Registers).|Mutating and idempotent when repeated with the same write payload.|Example: modbus client <endpoint> read-write-multiple-registers",
         "scan|Uses repeated Modbus function code 03 (Read Holding Registers) requests.|Read-only and idempotent; safe to repeat without changing device state.|Example: modbus client <endpoint> scan 0 100 --size 10"
       },
       delimiter = '|')

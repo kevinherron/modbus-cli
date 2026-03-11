@@ -32,17 +32,24 @@ import picocli.CommandLine.ParentCommand;
  * group, which includes:
  *
  * <ul>
- *   <li>{@link ReadCoilsCommand} (rc) - Read coils (function code 01)
- *   <li>{@link ReadDiscreteInputsCommand} (rdi) - Read discrete inputs (function code 02)
- *   <li>{@link ReadHoldingRegistersCommand} (rhr) - Read holding registers (function code 03)
- *   <li>{@link ReadInputRegistersCommand} (rir) - Read input registers (function code 04)
- *   <li>{@link WriteSingleCoilCommand} (wsc) - Write single coil (function code 05)
- *   <li>{@link WriteMultipleCoilsCommand} (wmc) - Write multiple coils (function code 15)
- *   <li>{@link WriteSingleRegisterCommand} (wsr) - Write single register (function code 06)
- *   <li>{@link WriteMultipleRegistersCommand} (wmr) - Write multiple registers (function code 16)
- *   <li>{@link MaskWriteRegisterCommand} (mwr) - Mask write register (function code 22)
- *   <li>{@link ReadWriteMultipleRegistersCommand} (rwmr) - Read/write multiple registers (function
- *       code 23)
+ *   <li>{@link ReadCoilsCommand} (read-coils) - Read coils (function code 01)
+ *   <li>{@link ReadDiscreteInputsCommand} (read-discrete-inputs) - Read discrete inputs (function
+ *       code 02)
+ *   <li>{@link ReadHoldingRegistersCommand} (read-holding-registers) - Read holding registers
+ *       (function code 03)
+ *   <li>{@link ReadInputRegistersCommand} (read-input-registers) - Read input registers (function
+ *       code 04)
+ *   <li>{@link WriteSingleCoilCommand} (write-single-coil) - Write single coil (function code 05)
+ *   <li>{@link WriteMultipleCoilsCommand} (write-multiple-coils) - Write multiple coils (function
+ *       code 15)
+ *   <li>{@link WriteSingleRegisterCommand} (write-single-register) - Write single register
+ *       (function code 06)
+ *   <li>{@link WriteMultipleRegistersCommand} (write-multiple-registers) - Write multiple registers
+ *       (function code 16)
+ *   <li>{@link MaskWriteRegisterCommand} (mask-write-register) - Mask write register (function code
+ *       22)
+ *   <li>{@link ReadWriteMultipleRegistersCommand} (read-write-multiple-registers) - Read/write
+ *       multiple registers (function code 23)
  *   <li>{@link ScanCommand} (scan) - Scan register ranges
  * </ul>
  */

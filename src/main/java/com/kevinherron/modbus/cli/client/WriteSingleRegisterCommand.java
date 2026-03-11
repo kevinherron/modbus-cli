@@ -18,20 +18,21 @@ import picocli.CommandLine.ParentCommand;
  * <p>This command writes a single 16-bit value to a holding register. Holding registers are
  * read/write values typically used for configuration settings, setpoints, or control parameters.
  *
- * <p>This command is invoked using {@code wsr} (e.g., {@code modbus client wsr 0 1234}).
+ * <p>This command is invoked using {@code write-single-register} (e.g., {@code modbus client
+ * write-single-register 0 1234}).
  *
  * @see WriteMultipleRegistersCommand for writing multiple registers (function code 16)
  * @see ReadHoldingRegistersCommand for reading holding register values (function code 03)
  */
 @Command(
-    name = "wsr",
-    aliases = "write-single-register",
+    name = "write-single-register",
+    aliases = "wsr",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 06 (Write Single Register).",
       "Mutating and idempotent when repeated with the same value.",
-      "Example: modbus client <endpoint> wsr 0 1234"
+      "Example: modbus client <endpoint> write-single-register 0 1234"
     })
 class WriteSingleRegisterCommand implements Runnable {
 
@@ -51,7 +52,7 @@ class WriteSingleRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        "wsr",
+        "write-single-register",
         (ModbusClient client, int unitId, OutputContext output) -> {
           int registerValue = ValueParser.parseRegisterValue(value);
 

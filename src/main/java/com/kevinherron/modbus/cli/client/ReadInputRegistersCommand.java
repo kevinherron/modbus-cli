@@ -20,19 +20,20 @@ import picocli.CommandLine.ParentCommand;
  * be modified by the Modbus master. They typically represent measurement data, sensor readings, or
  * other values that are produced by the device.
  *
- * <p>This command is invoked using {@code rir} (e.g., {@code modbus client rir 0 10}).
+ * <p>This command is invoked using {@code read-input-registers} (e.g., {@code modbus client
+ * read-input-registers 0 10}).
  *
  * @see ReadHoldingRegistersCommand for read/write holding registers (function code 03)
  */
 @Command(
-    name = "rir",
-    aliases = "read-input-registers",
+    name = "read-input-registers",
+    aliases = "rir",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 04 (Read Input Registers).",
       "Read-only and idempotent; safe to repeat without changing device state.",
-      "Example: modbus client <endpoint> rir 0 10"
+      "Example: modbus client <endpoint> read-input-registers 0 10"
     })
 class ReadInputRegistersCommand implements Runnable {
 
@@ -67,10 +68,11 @@ class ReadInputRegistersCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient("rir", this::executeRead);
+      clientCommand.runWithClient("read-input-registers", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling("rir", this::executeRead, count, interval);
+      clientCommand.runWithClientPolling(
+          "read-input-registers", this::executeRead, count, interval);
     }
   }
 

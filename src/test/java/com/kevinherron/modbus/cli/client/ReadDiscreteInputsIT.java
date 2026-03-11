@@ -31,7 +31,7 @@ public class ReadDiscreteInputsIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rdi",
+              "read-discrete-inputs",
               "100",
               "10");
 
@@ -112,7 +112,7 @@ public class ReadDiscreteInputsIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rdi",
+              "read-discrete-inputs",
               "100",
               "10",
               "-c",

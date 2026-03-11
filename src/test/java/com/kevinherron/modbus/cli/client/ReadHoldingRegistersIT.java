@@ -32,7 +32,7 @@ public class ReadHoldingRegistersIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rhr",
+              "read-holding-registers",
               "100",
               "5");
 
@@ -113,7 +113,7 @@ public class ReadHoldingRegistersIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rhr",
+              "read-holding-registers",
               "100",
               "5",
               "-c",

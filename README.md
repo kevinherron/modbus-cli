@@ -25,7 +25,7 @@ Modbus RTU server started on /dev/ttyUSB0
 **Read holding registers:**
 
 ```bash
-$ modbus client localhost rhr 0 10
+$ modbus client localhost read-holding-registers 0 10
 Hostname: localhost:502, Unit ID: 1
 → ReadHoldingRegistersRequest[address=0, quantity=10]
 ← ReadHoldingRegistersResponse[registers=0000000100020003000400050006000700080009]
@@ -38,7 +38,7 @@ Offset (hex)	Bytes (hex)
 **Get JSON output for automation:**
 
 ```bash
-$ modbus --format=json client localhost rhr 0 10
+$ modbus --format=json client localhost read-holding-registers 0 10
 {"timestamp":"2025-11-02T23:07:57.618695Z","type":"info","message":"Hostname: localhost:502, Unit ID: 1"}
 {"timestamp":"2025-11-02T23:07:57.627904Z","type":"register_table","start_address":0,"quantity":10,"data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
 ```
@@ -46,10 +46,10 @@ $ modbus --format=json client localhost rhr 0 10
 **Write then read back a register:**
 
 ```bash
-$ modbus --format=json client localhost wsr 100 42
+$ modbus --format=json client localhost write-single-register 100 42
 {"timestamp":"2025-11-02T23:08:09.316542Z","type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}
 
-$ modbus --format=json client localhost rhr 100 1
+$ modbus --format=json client localhost read-holding-registers 100 1
 {"timestamp":"2025-11-02T23:08:09.332309Z","type":"register_table","start_address":100,"quantity":1,"data":[0,42]}
 ```
 
@@ -72,7 +72,7 @@ Address 	Values (hex, 2 bytes each)
 **Poll and filter JSON output with jq:**
 
 ```bash
-$ modbus --format=json client localhost rhr 0 10 -c 5 | jq -c 'select(.type == "register_table") | {timestamp, data}'
+$ modbus --format=json client localhost read-holding-registers 0 10 -c 5 | jq -c 'select(.type == "register_table") | {timestamp, data}'
 {"timestamp":"2025-11-02T23:12:37.072923Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
 {"timestamp":"2025-11-02T23:12:38.075708Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
 {"timestamp":"2025-11-02T23:12:39.081328Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
@@ -83,7 +83,7 @@ $ modbus --format=json client localhost rhr 0 10 -c 5 | jq -c 'select(.type == "
 **Read holding registers over RTU serial:**
 
 ```bash
-$ modbus client rtu:/dev/ttyUSB0 --baud 19200 rhr 0 10
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 read-holding-registers 0 10
 Serial Port: /dev/ttyUSB0, Unit ID: 1
 ...
 ```
@@ -91,7 +91,7 @@ Serial Port: /dev/ttyUSB0, Unit ID: 1
 **Use RS-485 mode:**
 
 ```bash
-$ modbus client rtu:/dev/ttyUSB0 --baud 19200 --rs485 --rs485-rts-high rhr 0 10
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 --rs485 --rs485-rts-high read-holding-registers 0 10
 Serial Port: /dev/ttyUSB0, Unit ID: 1, RS-485 mode
 ...
 ```
@@ -210,19 +210,19 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 #### Read Operations (read-only, safe to retry)
 
-- `rc` / `read-coils` `<address> <quantity>` - Read coils (FC 01)
-- `rdi` / `read-discrete-inputs` `<address> <quantity>` - Read discrete inputs (FC 02)
-- `rhr` / `read-holding-registers` `<address> <quantity>` - Read holding registers (FC 03)
-- `rir` / `read-input-registers` `<address> <quantity>` - Read input registers (FC 04)
+- `read-coils` / `rc` `<address> <quantity>` - Read coils (FC 01)
+- `read-discrete-inputs` / `rdi` `<address> <quantity>` - Read discrete inputs (FC 02)
+- `read-holding-registers` / `rhr` `<address> <quantity>` - Read holding registers (FC 03)
+- `read-input-registers` / `rir` `<address> <quantity>` - Read input registers (FC 04)
 
 #### Write Operations (mutating)
 
-- `wsc` / `write-single-coil` `<address> <value>` - Write single coil (FC 05)
-- `wmc` / `write-multiple-coils` `<address> <values...>` - Write multiple coils (FC 15)
-- `wsr` / `write-single-register` `<address> <value>` - Write single register (FC 06)
-- `wmr` / `write-multiple-registers` `<address> <values...>` - Write multiple registers (FC 16)
-- `mwr` / `mask-write-register` `<address> <and-mask> <or-mask>` - Mask write register (FC 22)
-- `rwmr` / `read-write-multiple-registers` `<read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
+- `write-single-coil` / `wsc` `<address> <value>` - Write single coil (FC 05)
+- `write-multiple-coils` / `wmc` `<address> <values...>` - Write multiple coils (FC 15)
+- `write-single-register` / `wsr` `<address> <value>` - Write single register (FC 06)
+- `write-multiple-registers` / `wmr` `<address> <values...>` - Write multiple registers (FC 16)
+- `mask-write-register` / `mwr` `<address> <and-mask> <or-mask>` - Mask write register (FC 22)
+- `read-write-multiple-registers` / `rwmr` `<read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
 
 #### Other
 
@@ -301,10 +301,10 @@ modbus-cli/
 │   ├── SerialPortOptions.java   # Serial port config mixin (baud, parity, RS-485)
 │   ├── client/
 │   │   ├── ClientCommand.java   # Client base command (TCP + RTU)
-│   │   ├── Read*.java          # Read operations (rc, rdi, rhr, rir)
-│   │   ├── Write*.java         # Write operations (wsc, wmc, wsr, wmr, mwr)
+│   │   ├── Read*.java          # Read operations (read-coils, read-discrete-inputs, read-holding-registers, read-input-registers)
+│   │   ├── Write*.java         # Write operations (write-single-coil, write-multiple-coils, write-single-register, write-multiple-registers, mask-write-register)
 │   │   ├── ScanCommand.java    # Scan operation with sliding window
-│   │   └── ReadWriteMultipleRegistersCommand.java  # rwmr operation
+│   │   └── ReadWriteMultipleRegistersCommand.java  # read-write-multiple-registers operation
 │   ├── server/
 │   │   └── ServerCommand.java  # Test server (TCP + RTU)
 │   ├── util/
@@ -349,8 +349,8 @@ See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 
 ### Output Types
 
-- **register_table** - Register read results (rhr, rir, rwmr)
-- **coil_table** - Coil/discrete input results (rc, rdi)
+- **register_table** - Register read results (read-holding-registers, read-input-registers, read-write-multiple-registers)
+- **coil_table** - Coil/discrete input results (read-coils, read-discrete-inputs)
 - **scan_results** - Scan command results with overlap detection
 - **protocol** - Raw Modbus PDU messages (hex-encoded)
 - **info** - Connection and status messages

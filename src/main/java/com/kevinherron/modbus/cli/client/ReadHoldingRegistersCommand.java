@@ -19,19 +19,20 @@ import picocli.CommandLine.ParentCommand;
  * <p>Holding registers are 16-bit read/write values. They typically store configuration parameters,
  * setpoints, or other values that can be both read and modified by the Modbus master.
  *
- * <p>This command is invoked using {@code rhr} (e.g., {@code modbus client rhr 0 10}).
+ * <p>This command is invoked using {@code read-holding-registers} (e.g., {@code modbus client
+ * read-holding-registers 0 10}).
  *
  * @see ReadInputRegistersCommand for read-only input registers (function code 04)
  */
 @Command(
-    name = "rhr",
-    aliases = "read-holding-registers",
+    name = "read-holding-registers",
+    aliases = "rhr",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 03 (Read Holding Registers).",
       "Read-only and idempotent; safe to repeat without changing device state.",
-      "Example: modbus client <endpoint> rhr 0 10"
+      "Example: modbus client <endpoint> read-holding-registers 0 10"
     })
 class ReadHoldingRegistersCommand implements Runnable {
 
@@ -66,10 +67,11 @@ class ReadHoldingRegistersCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient("rhr", this::executeRead);
+      clientCommand.runWithClient("read-holding-registers", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling("rhr", this::executeRead, count, interval);
+      clientCommand.runWithClientPolling(
+          "read-holding-registers", this::executeRead, count, interval);
     }
   }
 

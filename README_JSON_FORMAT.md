@@ -18,7 +18,7 @@ envelope structure:
 {
   "schema_version": "2.0",
   "kind": "result | event | error",
-  "command": "client.rhr",
+  "command": "client.read-holding-registers",
   "invocation": {
     "id": "UUID",
     "sequence": 1,
@@ -36,7 +36,7 @@ envelope structure:
 |--------------------|--------|-----------------------------------------------------------------------|
 | `schema_version`   | string | Always `"2.0"`.                                                       |
 | `kind`             | string | Record type: `"result"`, `"event"`, or `"error"`.                     |
-| `command`          | string | The command that produced this record (e.g., `"client.rhr"`).         |
+| `command`          | string | The command that produced this record (e.g., `"client.read-holding-registers"`). |
 | `invocation.id`    | string | UUID unique to this CLI invocation.                                   |
 | `invocation.sequence` | int | Monotonically increasing sequence number within this invocation.      |
 | `invocation.iteration` | int | Present when polling with `-c`; the current iteration number.        |
@@ -70,7 +70,7 @@ Errors in JSON mode are structured objects, not plain strings:
 {
   "schema_version": "2.0",
   "kind": "error",
-  "command": "client.rhr",
+  "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 3 },
   "timestamp": "2025-11-02T23:07:58.123Z",
   "error": {
@@ -132,13 +132,13 @@ or runtime failures are written to `stderr`.
 
 Output from register read operations (holding registers, input registers).
 
-**Commands:** `rhr` / `read-holding-registers`, `rir` / `read-input-registers`, `rwmr` / `read-write-multiple-registers`
+**Commands:** `read-holding-registers` / `rhr`, `read-input-registers` / `rir`, `read-write-multiple-registers` / `rwmr`
 
 ```json
 {
   "schema_version": "2.0",
   "kind": "result",
-  "command": "client.rhr",
+  "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 3 },
   "timestamp": "...",
   "data": {
@@ -163,13 +163,13 @@ Output from register read operations (holding registers, input registers).
 
 Output from coil/discrete input read operations.
 
-**Commands:** `rc` / `read-coils`, `rdi` / `read-discrete-inputs`
+**Commands:** `read-coils` / `rc`, `read-discrete-inputs` / `rdi`
 
 ```json
 {
   "schema_version": "2.0",
   "kind": "result",
-  "command": "client.rc",
+  "command": "client.read-coils",
   "invocation": { "id": "...", "sequence": 3 },
   "timestamp": "...",
   "data": {
@@ -240,7 +240,7 @@ Modbus request and response messages with raw PDU bytes.
 {
   "schema_version": "2.0",
   "kind": "event",
-  "command": "client.rhr",
+  "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },
   "timestamp": "...",
   "data": {
@@ -282,7 +282,7 @@ Connection and status information.
 {
   "schema_version": "2.0",
   "kind": "event",
-  "command": "client.rhr",
+  "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },
   "timestamp": "...",
   "data": {
@@ -296,51 +296,51 @@ Connection and status information.
 
 ### Read Commands
 
-| Command | Alias                          | Data Output      |
-|---------|--------------------------------|------------------|
-| `rc`    | `read-coils`                   | `coil_table`     |
-| `rdi`   | `read-discrete-inputs`         | `coil_table`     |
-| `rhr`   | `read-holding-registers`       | `register_table` |
-| `rir`   | `read-input-registers`         | `register_table` |
-| `rwmr`  | `read-write-multiple-registers`| `register_table` |
-| `scan`  |                                | `scan_results`   |
+| Command                          | Alias  | Data Output      |
+|----------------------------------|--------|------------------|
+| `read-coils`                     | `rc`   | `coil_table`     |
+| `read-discrete-inputs`          | `rdi`  | `coil_table`     |
+| `read-holding-registers`        | `rhr`  | `register_table` |
+| `read-input-registers`          | `rir`  | `register_table` |
+| `read-write-multiple-registers` | `rwmr` | `register_table` |
+| `scan`                           |        | `scan_results`   |
 
 ### Write Commands
 
-| Command | Alias                       | Data Output                   |
-|---------|-----------------------------|-------------------------------|
-| `wsc`   | `write-single-coil`        | None (protocol messages only) |
-| `wmc`   | `write-multiple-coils`      | None (protocol messages only) |
-| `wsr`   | `write-single-register`     | None (protocol messages only) |
-| `wmr`   | `write-multiple-registers`  | None (protocol messages only) |
-| `mwr`   | `mask-write-register`       | None (protocol messages only) |
+| Command                      | Alias | Data Output                   |
+|------------------------------|-------|-------------------------------|
+| `write-single-coil`         | `wsc` | None (protocol messages only) |
+| `write-multiple-coils`      | `wmc` | None (protocol messages only) |
+| `write-single-register`     | `wsr` | None (protocol messages only) |
+| `write-multiple-registers`  | `wmr` | None (protocol messages only) |
+| `mask-write-register`       | `mwr` | None (protocol messages only) |
 
 ## Parsing Examples
 
 ### Extract register values with jq
 
 ```bash
-$ modbus --format=json --emit=result client localhost rhr 0 5 | jq '.data.registers'
+$ modbus --format=json --emit=result client localhost read-holding-registers 0 5 | jq '.data.registers'
 [0, 1, 2, 3, 4]
 ```
 
 ### Extract raw bytes
 
 ```bash
-$ modbus --format=json --emit=result client localhost rhr 0 5 | jq -r '.data.bytes'
+$ modbus --format=json --emit=result client localhost read-holding-registers 0 5 | jq -r '.data.bytes'
 00000001000200030004
 ```
 
 ### Filter by record kind
 
 ```bash
-$ modbus --format=json client localhost rhr 0 5 | jq -c 'select(.kind == "result")'
+$ modbus --format=json client localhost read-holding-registers 0 5 | jq -c 'select(.kind == "result")'
 ```
 
 ### Poll and extract register values
 
 ```bash
-$ modbus --format=json --emit=result client localhost rhr 0 10 -c 5 | \
+$ modbus --format=json --emit=result client localhost read-holding-registers 0 10 -c 5 | \
   jq -c '{timestamp, registers: .data.registers}'
 ```
 

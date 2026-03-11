@@ -20,9 +20,9 @@ import picocli.CommandLine.ParentCommand;
  * Modbus request/response cycle. This atomicity ensures that no other master can intervene between
  * the write and read operations.
  *
- * <p>This command is invoked using {@code rwmr} (e.g., {@code modbus client rwmr 0 5 10 3
- * 100,200,300} to read 5 registers starting at address 0 and write 3 registers starting at address
- * 10).
+ * <p>This command is invoked using {@code read-write-multiple-registers} (e.g., {@code modbus
+ * client read-write-multiple-registers 0 5 10 3 100,200,300} to read 5 registers starting at
+ * address 0 and write 3 registers starting at address 10).
  *
  * <p>Write values are encoded in big-endian byte order per the Modbus protocol: the high byte is
  * transmitted first, followed by the low byte. Each 16-bit register value is converted to 2 bytes
@@ -32,14 +32,14 @@ import picocli.CommandLine.ParentCommand;
  * @see WriteMultipleRegistersCommand for writing registers only (function code 16)
  */
 @Command(
-    name = "rwmr",
-    aliases = "read-write-multiple-registers",
+    name = "read-write-multiple-registers",
+    aliases = "rwmr",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 23 (Read/Write Multiple Registers).",
       "Mutating and idempotent when repeated with the same write payload.",
-      "Example: modbus client <endpoint> rwmr 0 5 10 3 100,200,300"
+      "Example: modbus client <endpoint> read-write-multiple-registers 0 5 10 3 100,200,300"
     })
 class ReadWriteMultipleRegistersCommand implements Runnable {
 
@@ -71,7 +71,7 @@ class ReadWriteMultipleRegistersCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        "rwmr",
+        "read-write-multiple-registers",
         (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = writeValues.split(",");
           if (valueStrings.length != writeQuantity) {

@@ -20,19 +20,20 @@ import picocli.CommandLine.ParentCommand;
  * switches, or status indicators. Unlike coils (function code 01), discrete inputs cannot be
  * written to—they reflect the state of external signals.
  *
- * <p>This command is invoked using {@code rdi} (e.g., {@code modbus client rdi 0 10}).
+ * <p>This command is invoked using {@code read-discrete-inputs} (e.g., {@code modbus client
+ * read-discrete-inputs 0 10}).
  *
  * @see ReadCoilsCommand for read/write discrete outputs (function code 01)
  */
 @Command(
-    name = "rdi",
-    aliases = "read-discrete-inputs",
+    name = "read-discrete-inputs",
+    aliases = "rdi",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 02 (Read Discrete Inputs).",
       "Read-only and idempotent; safe to repeat without changing device state.",
-      "Example: modbus client <endpoint> rdi 0 10"
+      "Example: modbus client <endpoint> read-discrete-inputs 0 10"
     })
 class ReadDiscreteInputsCommand implements Runnable {
 
@@ -68,10 +69,11 @@ class ReadDiscreteInputsCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient("rdi", this::executeRead);
+      clientCommand.runWithClient("read-discrete-inputs", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling("rdi", this::executeRead, count, interval);
+      clientCommand.runWithClientPolling(
+          "read-discrete-inputs", this::executeRead, count, interval);
     }
   }
 

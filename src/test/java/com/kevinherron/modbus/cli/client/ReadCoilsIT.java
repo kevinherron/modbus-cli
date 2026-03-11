@@ -31,7 +31,7 @@ public class ReadCoilsIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rc",
+              "read-coils",
               "100",
               "10");
 
@@ -112,7 +112,7 @@ public class ReadCoilsIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rc",
+              "read-coils",
               "100",
               "10",
               "-c",

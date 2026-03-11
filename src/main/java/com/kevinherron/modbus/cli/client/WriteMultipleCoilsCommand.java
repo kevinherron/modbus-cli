@@ -18,8 +18,8 @@ import picocli.CommandLine.ParentCommand;
  * <p>This command writes multiple coils (discrete outputs) in a single transaction. Coils are
  * read/write boolean values typically representing physical outputs like relays or actuators.
  *
- * <p>This command is invoked using {@code wmc} (e.g., {@code modbus client wmc 0 4
- * true,false,1,0}).
+ * <p>This command is invoked using {@code write-multiple-coils} (e.g., {@code modbus client
+ * write-multiple-coils 0 4 true,false,1,0}).
  *
  * <p>Coil values are packed into bytes using LSB-first bit ordering per the Modbus protocol. The
  * byte count is calculated as {@code (quantity + 7) / 8}, and each coil value is set as a bit
@@ -29,14 +29,14 @@ import picocli.CommandLine.ParentCommand;
  * @see ReadCoilsCommand for reading coil values (function code 01)
  */
 @Command(
-    name = "wmc",
-    aliases = "write-multiple-coils",
+    name = "write-multiple-coils",
+    aliases = "wmc",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 15 (Write Multiple Coils).",
       "Mutating and idempotent when repeated with the same values.",
-      "Example: modbus client <endpoint> wmc 0 4 true,false,1,0"
+      "Example: modbus client <endpoint> write-multiple-coils 0 4 true,false,1,0"
     })
 class WriteMultipleCoilsCommand implements Runnable {
 
@@ -62,7 +62,7 @@ class WriteMultipleCoilsCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        "wmc",
+        "write-multiple-coils",
         (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = values.split(",");
           if (valueStrings.length != quantity) {

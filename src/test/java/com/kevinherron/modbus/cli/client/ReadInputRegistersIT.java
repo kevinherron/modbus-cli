@@ -30,7 +30,7 @@ public class ReadInputRegistersIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rir",
+              "read-input-registers",
               "100",
               "5");
 
@@ -109,7 +109,7 @@ public class ReadInputRegistersIT {
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rir",
+              "read-input-registers",
               "100",
               "5",
               "-c",

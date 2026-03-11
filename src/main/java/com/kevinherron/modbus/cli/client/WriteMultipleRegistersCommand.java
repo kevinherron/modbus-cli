@@ -19,7 +19,8 @@ import picocli.CommandLine.ParentCommand;
  * registers are 16-bit read/write values commonly used for configuration settings, setpoints, and
  * other numeric data.
  *
- * <p>This command is invoked using {@code wmr} (e.g., {@code modbus client wmr 0 3 100,0x64,200}).
+ * <p>This command is invoked using {@code write-multiple-registers} (e.g., {@code modbus client
+ * write-multiple-registers 0 3 100,0x64,200}).
  *
  * <p>Register values are encoded in big-endian byte order per the Modbus protocol: the high byte is
  * transmitted first, followed by the low byte. Each 16-bit register value is converted to 2 bytes
@@ -29,14 +30,14 @@ import picocli.CommandLine.ParentCommand;
  * @see ReadHoldingRegistersCommand for reading holding registers (function code 03)
  */
 @Command(
-    name = "wmr",
-    aliases = "write-multiple-registers",
+    name = "write-multiple-registers",
+    aliases = "wmr",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 16 (Write Multiple Registers).",
       "Mutating and idempotent when repeated with the same values.",
-      "Example: modbus client <endpoint> wmr 0 3 100,0x64,200"
+      "Example: modbus client <endpoint> write-multiple-registers 0 3 100,0x64,200"
     })
 class WriteMultipleRegistersCommand implements Runnable {
 
@@ -63,7 +64,7 @@ class WriteMultipleRegistersCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
-        "wmr",
+        "write-multiple-registers",
         (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = values.split(",");
           if (valueStrings.length != quantity) {

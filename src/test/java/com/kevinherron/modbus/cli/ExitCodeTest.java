@@ -20,7 +20,8 @@ class ExitCodeTest {
 
   @Test
   void connectionFailureReturnsConnectionExitCode() {
-    var result = CliTestRunner.execute("client", "127.0.0.1", "-p", "1", "rhr", "0", "1");
+    var result =
+        CliTestRunner.execute("client", "127.0.0.1", "-p", "1", "read-holding-registers", "0", "1");
 
     assertEquals(3, result.exitCode());
     assertFalse(result.stderr().isBlank());
@@ -33,7 +34,15 @@ class ExitCodeTest {
   void jsonConnectionFailureWritesErrorRecordToStdout() {
     var result =
         CliTestRunner.execute(
-            "--format", "json", "client", "127.0.0.1", "-p", "1", "rhr", "0", "1");
+            "--format",
+            "json",
+            "client",
+            "127.0.0.1",
+            "-p",
+            "1",
+            "read-holding-registers",
+            "0",
+            "1");
 
     assertEquals(3, result.exitCode());
     assertTrue(result.stderr().isBlank());

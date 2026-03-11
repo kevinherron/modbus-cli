@@ -22,7 +22,7 @@ public interface OutputContext {
   void setIteration(Integer iteration);
 
   /**
-   * Sets the command identifier for structured output (e.g., "client.rhr").
+   * Sets the command identifier for structured output (e.g., "client.read-holding-registers").
    *
    * @param command the command identifier.
    */

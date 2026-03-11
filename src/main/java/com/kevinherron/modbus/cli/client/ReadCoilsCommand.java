@@ -20,19 +20,20 @@ import picocli.CommandLine.ParentCommand;
  * to physical outputs like relays or actuators, or internal flags that can be both read and
  * written.
  *
- * <p>This command is invoked using {@code rc} (e.g., {@code modbus client rc 0 10}).
+ * <p>This command is invoked using {@code read-coils} (e.g., {@code modbus client read-coils 0
+ * 10}).
  *
  * @see ReadDiscreteInputsCommand for read-only discrete inputs (function code 02)
  */
 @Command(
-    name = "rc",
+    name = "read-coils",
     aliases = "read-coils",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {
       "Modbus function code 01 (Read Coils).",
       "Read-only and idempotent; safe to repeat without changing device state.",
-      "Example: modbus client <endpoint> rc 0 10"
+      "Example: modbus client <endpoint> read-coils 0 10"
     })
 class ReadCoilsCommand implements Runnable {
 
@@ -65,10 +66,10 @@ class ReadCoilsCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient("rc", this::executeRead);
+      clientCommand.runWithClient("read-coils", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling("rc", this::executeRead, count, interval);
+      clientCommand.runWithClientPolling("read-coils", this::executeRead, count, interval);
     }
   }
 
