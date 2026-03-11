@@ -39,18 +39,22 @@ Offset (hex)	Bytes (hex)
 
 ```bash
 $ modbus --format=json client localhost read-holding-registers 0 10
-{"timestamp":"2025-11-02T23:07:57.618695Z","type":"info","message":"Hostname: localhost:502, Unit ID: 1"}
-{"timestamp":"2025-11-02T23:07:57.627904Z","type":"register_table","start_address":0,"quantity":10,"data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+{"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"type":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
+{"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"type":"protocol","direction":"sent","function_code":3,"pdu":"030000000a"}}
+{"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"type":"protocol","direction":"received","function_code":3,"pdu":"03140000000100020003000400050006000700080009"}}
+{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":4},"timestamp":"...","data":{"type":"register_table","start_address":0,"quantity":10,"bytes":"0000000100020003000400050006000700080009","registers":[0,1,2,3,4,5,6,7,8,9]}}
 ```
 
 **Write then read back a register:**
 
 ```bash
 $ modbus --format=json client localhost write-single-register 100 42
-{"timestamp":"2025-11-02T23:08:09.316542Z","type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}
+{"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"type":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
+{"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"type":"protocol","direction":"sent","function_code":6,"pdu":"060064002a"}}
+{"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}}
 
 $ modbus --format=json client localhost read-holding-registers 100 1
-{"timestamp":"2025-11-02T23:08:09.332309Z","type":"register_table","start_address":100,"quantity":1,"data":[0,42]}
+{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":4},"timestamp":"...","data":{"type":"register_table","start_address":100,"quantity":1,"bytes":"002a","registers":[42]}}
 ```
 
 **Scan a range of registers:**
@@ -72,12 +76,13 @@ Address 	Values (hex, 2 bytes each)
 **Poll and filter JSON output with jq:**
 
 ```bash
-$ modbus --format=json client localhost read-holding-registers 0 10 -c 5 | jq -c 'select(.type == "register_table") | {timestamp, data}'
-{"timestamp":"2025-11-02T23:12:37.072923Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:38.075708Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:39.081328Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:40.086801Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:41.088714Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+$ modbus --format=json client localhost read-holding-registers 0 10 -c 5 \
+    | jq -c 'select(.data.type == "register_table") | {timestamp, data: .data.registers}'
+{"timestamp":"2026-03-11T22:58:39.194847Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:40.196611Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:41.201814Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:42.203609Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:43.208813Z","data":[0,1,2,3,4,5,6,7,8,9]}
 ```
 
 **Read holding registers over RTU serial:**
