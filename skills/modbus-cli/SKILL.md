@@ -62,6 +62,9 @@ modbus [global-options] client <endpoint> [client-options] <subcommand> [args]
 
 **Important**: Client options (e.g. `--timeout`, `--unit-id`) must appear BEFORE the subcommand.
 
+> Before running any subcommand, read its linked command doc to learn the exact positional
+> arguments required. Do not guess argument order from the command name alone.
+
 ### Client Options
 
 | Option          | Description          | Default |
@@ -108,15 +111,15 @@ default 1000).
 With `--format json`, output is NDJSON (one JSON object per line). Every line has a common
 envelope with the following fields:
 
-| Field                  | Description                                                                          |
-|------------------------|--------------------------------------------------------------------------------------|
-| `kind`                 | `"event"` (info or protocol), `"result"` (final command output), or `"error"`        |
-| `command`              | Command that produced this line, e.g. `"client.read-holding-registers"`              |
-| `invocation.id`        | UUID shared by all lines from the same invocation                                    |
-| `invocation.sequence`  | Monotonically increasing counter within the invocation                               |
-| `invocation.iteration` | Present only when polling with `-c`; the 1-based poll iteration                      |
-| `timestamp`            | ISO-8601 UTC timestamp                                                               |
-| `data`                 | Payload for `"event"` and `"result"` kinds — shape depends on command (see below)    |
+| Field                  | Description                                                                             |
+|------------------------|-----------------------------------------------------------------------------------------|
+| `kind`                 | `"event"` (info or protocol), `"result"` (final command output), or `"error"`           |
+| `command`              | Command that produced this line, e.g. `"client.read-holding-registers"`                 |
+| `invocation.id`        | UUID shared by all lines from the same invocation                                       |
+| `invocation.sequence`  | Monotonically increasing counter within the invocation                                  |
+| `invocation.iteration` | Present only when polling with `-c`; the 1-based poll iteration                         |
+| `timestamp`            | ISO-8601 UTC timestamp                                                                  |
+| `data`                 | Payload for `"event"` and `"result"` kinds — shape depends on command (see below)       |
 | `error`                | Payload for `"error"` kind — contains `code`, `category`, `message`, and opt. `details` |
 
 Result example — reading 5 holding registers with `--format json --emit result`:
