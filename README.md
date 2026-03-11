@@ -222,7 +222,8 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 - `write-single-register` / `wsr` `<address> <value>` - Write single register (FC 06)
 - `write-multiple-registers` / `wmr` `<address> <values...>` - Write multiple registers (FC 16)
 - `mask-write-register` / `mwr` `<address> <and-mask> <or-mask>` - Mask write register (FC 22)
-- `read-write-multiple-registers` / `rwmr` `<read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
+- `read-write-multiple-registers` / `rwmr` `<read-addr> <read-qty> <write-addr> <values...>` -
+  Read/Write multiple registers (FC 23)
 
 #### Other
 
@@ -270,7 +271,8 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 ### Dependencies
 
-- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP and RTU client/server implementation
+- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP and RTU
+  client/server implementation
 - [**picocli**](https://github.com/remkop/picocli) - Command-line interface framework
 - [**jansi**](https://github.com/fusesource/jansi) - ANSI color support for terminal output
 
@@ -349,7 +351,8 @@ See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 
 ### Output Types
 
-- **register_table** - Register read results (read-holding-registers, read-input-registers, read-write-multiple-registers)
+- **register_table** - Register read results (read-holding-registers, read-input-registers,
+  read-write-multiple-registers)
 - **coil_table** - Coil/discrete input results (read-coils, read-discrete-inputs)
 - **scan_results** - Scan command results with overlap detection
 - **protocol** - Raw Modbus PDU messages (hex-encoded)
@@ -362,15 +365,34 @@ All JSON output is newline-delimited (NDJSON) for easy streaming and parsing.
 
 The CLI uses stable, documented exit codes for automation:
 
-| Code | Meaning                        | Example                                      |
-|------|--------------------------------|----------------------------------------------|
-| `0`  | Success                        | Command completed normally.                  |
-| `1`  | General failure (fallback)     | Unclassified Modbus error.                   |
-| `2`  | CLI usage error                | Invalid arguments, missing parameters.       |
-| `3`  | Connection/Setup failure       | Cannot connect to host, serial port busy.    |
-| `4`  | Modbus protocol failure        | Modbus exception response, CRC error.        |
-| `5`  | Timeout or interrupted         | Request timed out, operation interrupted.     |
-| `10` | Internal error                 | Unexpected exception, bug.                   |
+| Code | Meaning                    | Example                                   |
+|------|----------------------------|-------------------------------------------|
+| `0`  | Success                    | Command completed normally.               |
+| `1`  | General failure (fallback) | Unclassified Modbus error.                |
+| `2`  | CLI usage error            | Invalid arguments, missing parameters.    |
+| `3`  | Connection/Setup failure   | Cannot connect to host, serial port busy. |
+| `4`  | Modbus protocol failure    | Modbus exception response, CRC error.     |
+| `5`  | Timeout or interrupted     | Request timed out, operation interrupted. |
+| `10` | Internal error             | Unexpected exception, bug.                |
+
+## Agent Skill
+
+This project includes an [Agent Skill](https://agentskills.io/home) that lets AI coding agents
+interact with Modbus devices on your behalf. When the skill is installed, an agent can read
+registers, write coils, scan address ranges, or start a test server using natural language.
+
+The skill is located in [`skills/modbus-cli/`](skills/modbus-cli/) and requires the `modbus`
+executable to be on your `$PATH`.
+
+Example interactions:
+
+- *"Start a Modbus test server on port 502 and read the first 10 holding registers"*
+- *"Scan Modbus registers 0–100 on 192.168.1.50 and tell me which ones have non-zero values"*
+- *"Write 1500 to Modbus holding register 40 on 10.0.0.1, then read it back to confirm"*
+- *"Read Modbus coils 0–15 on the RTU device at /dev/ttyUSB0 with baud 19200 and summarize which are
+  on"*
+- *"Poll Modbus input registers 0–4 on localhost port 502 every second for 10 iterations, then
+  chart the trend"*
 
 ## License
 
