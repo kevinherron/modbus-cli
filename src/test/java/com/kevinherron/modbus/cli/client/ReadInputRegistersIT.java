@@ -86,9 +86,12 @@ public class ReadInputRegistersIT {
       assertEquals(5, tableNode.get("quantity").asInt());
       assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-      // Verify the table's data array (input registers are not initialized, so all zeros)
-      ArrayNode dataNode = (ArrayNode) tableNode.get("data");
-      assertEquals(10, dataNode.size(), "Should have 10 bytes (5 registers * 2 bytes)");
+      // Verify hex-encoded bytes (input registers are not initialized, so all zeros)
+      assertTrue(tableNode.has("bytes"), "table node should have bytes");
+
+      // Verify the registers array
+      ArrayNode registersNode = (ArrayNode) tableNode.get("registers");
+      assertEquals(5, registersNode.size(), "Should have 5 register values");
     }
   }
 
@@ -170,8 +173,10 @@ public class ReadInputRegistersIT {
         assertEquals(iteration + 1, tableNode.get("iteration").asInt());
         assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-        ArrayNode dataNode = (ArrayNode) tableNode.get("data");
-        assertEquals(10, dataNode.size(), "Should have 10 bytes (5 registers * 2 bytes)");
+        assertTrue(tableNode.has("bytes"), "table node should have bytes");
+
+        ArrayNode registersNode = (ArrayNode) tableNode.get("registers");
+        assertEquals(5, registersNode.size(), "Should have 5 register values");
       }
     }
   }

@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteMultipleRegistersRequest;
 import com.digitalpetri.modbus.pdu.WriteMultipleRegistersResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -27,7 +28,16 @@ import picocli.CommandLine.ParentCommand;
  * @see WriteSingleRegisterCommand for writing a single register (function code 06)
  * @see ReadHoldingRegistersCommand for reading holding registers (function code 03)
  */
-@Command(name = "wmr", description = "Write Multiple Registers")
+@Command(
+    name = "wmr",
+    aliases = "write-multiple-registers",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 16 (Write Multiple Registers).",
+      "Mutating and idempotent when repeated with the same values.",
+      "Example: modbus client <endpoint> wmr 0 3 100,0x64,200"
+    })
 class WriteMultipleRegistersCommand implements Runnable {
 
   /** The starting address for writing registers. Addressing is typically 0-based. */
@@ -53,6 +63,7 @@ class WriteMultipleRegistersCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "wmr",
         (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = values.split(",");
           if (valueStrings.length != quantity) {

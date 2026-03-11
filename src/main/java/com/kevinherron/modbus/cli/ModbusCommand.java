@@ -2,6 +2,8 @@ package com.kevinherron.modbus.cli;
 
 import com.kevinherron.modbus.cli.client.ClientCommand;
 import com.kevinherron.modbus.cli.output.DefaultOutputContext;
+import com.kevinherron.modbus.cli.output.EmitMode;
+import com.kevinherron.modbus.cli.output.EmitModeConverter;
 import com.kevinherron.modbus.cli.output.HumanFormatter;
 import com.kevinherron.modbus.cli.output.JsonFormatter;
 import com.kevinherron.modbus.cli.output.OutputContext;
@@ -15,6 +17,10 @@ import picocli.CommandLine.Option;
 
 @Command(
     name = "modbus",
+    header = "Modbus CLI",
+    description = "Command-line interface for Modbus TCP and RTU serial operations.",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
     subcommands = {ClientCommand.class, ServerCommand.class})
 public class ModbusCommand {
 
@@ -39,6 +45,12 @@ public class ModbusCommand {
       description = "disable ANSI color output")
   boolean noColor = false;
 
+  @Option(
+      names = {"--emit"},
+      description = "control output: all, result, events (default: all)",
+      converter = EmitModeConverter.class)
+  EmitMode emitMode = EmitMode.ALL;
+
   /** Creates an OutputContext based on the command-line options. */
   public OutputContext createOutputContext() {
     OutputFormatter formatter =
@@ -47,7 +59,7 @@ public class ModbusCommand {
           case JSON -> new JsonFormatter();
         };
 
-    var options = new OutputOptions(format, verbose, quiet, !noColor);
+    var options = new OutputOptions(format, verbose, quiet, !noColor, emitMode);
 
     return new DefaultOutputContext(formatter, options);
   }

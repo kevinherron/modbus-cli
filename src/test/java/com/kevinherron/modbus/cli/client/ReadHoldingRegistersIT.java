@@ -88,11 +88,14 @@ public class ReadHoldingRegistersIT {
       assertEquals(5, tableNode.get("quantity").asInt());
       assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-      // Verify the table's data array
-      ArrayNode dataNode = (ArrayNode) tableNode.get("data");
+      // Verify hex-encoded bytes
+      assertEquals("00640065006600670068", tableNode.get("bytes").asText());
+
+      // Verify the registers array (16-bit values)
+      ArrayNode registersNode = (ArrayNode) tableNode.get("registers");
       assertArrayEquals(
-          new Integer[] {0, 100, 0, 101, 0, 102, 0, 103, 0, 104},
-          dataNode.valueStream().map(JsonNode::asInt).toArray(Integer[]::new));
+          new Integer[] {100, 101, 102, 103, 104},
+          registersNode.valueStream().map(JsonNode::asInt).toArray(Integer[]::new));
     }
   }
 
@@ -174,10 +177,12 @@ public class ReadHoldingRegistersIT {
         assertEquals(iteration + 1, tableNode.get("iteration").asInt());
         assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-        ArrayNode dataNode = (ArrayNode) tableNode.get("data");
+        assertEquals("00640065006600670068", tableNode.get("bytes").asText());
+
+        ArrayNode registersNode = (ArrayNode) tableNode.get("registers");
         assertArrayEquals(
-            new Integer[] {0, 100, 0, 101, 0, 102, 0, 103, 0, 104},
-            dataNode.valueStream().map(JsonNode::asInt).toArray(Integer[]::new));
+            new Integer[] {100, 101, 102, 103, 104},
+            registersNode.valueStream().map(JsonNode::asInt).toArray(Integer[]::new));
       }
     }
   }

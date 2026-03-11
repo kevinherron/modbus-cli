@@ -4,6 +4,7 @@ import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
 import com.digitalpetri.modbus.pdu.ReadDiscreteInputsRequest;
 import com.digitalpetri.modbus.pdu.ReadDiscreteInputsResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import java.time.Instant;
@@ -23,7 +24,16 @@ import picocli.CommandLine.ParentCommand;
  *
  * @see ReadCoilsCommand for read/write discrete outputs (function code 01)
  */
-@Command(name = "rdi", description = "Read Discrete Inputs")
+@Command(
+    name = "rdi",
+    aliases = "read-discrete-inputs",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 02 (Read Discrete Inputs).",
+      "Read-only and idempotent; safe to repeat without changing device state.",
+      "Example: modbus client <endpoint> rdi 0 10"
+    })
 class ReadDiscreteInputsCommand implements Runnable {
 
   /**
@@ -58,10 +68,10 @@ class ReadDiscreteInputsCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient(this::executeRead);
+      clientCommand.runWithClient("rdi", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling(this::executeRead, count, interval);
+      clientCommand.runWithClientPolling("rdi", this::executeRead, count, interval);
     }
   }
 

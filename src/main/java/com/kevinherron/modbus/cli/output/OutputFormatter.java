@@ -17,19 +17,26 @@ public interface OutputFormatter {
   /**
    * Sets the current iteration number for polling operations.
    *
-   * @param iteration the iteration number, or null for single operations
+   * @param iteration the iteration number, or null for single operations.
    */
   void setIteration(Integer iteration);
 
   /**
+   * Sets the command identifier for structured output (e.g., "client.rhr").
+   *
+   * @param command the command identifier.
+   */
+  default void setCommand(String command) {}
+
+  /**
    * Formats a protocol message.
    *
-   * @param out the output stream
-   * @param pdu the message object
-   * @param direction whether sent or received
+   * @param out the output stream.
+   * @param pdu the message object.
+   * @param direction whether sent or received.
    * @param timestamp the timestamp when the message was sent/received, or null to use the current
    *     time.
-   * @param options output options
+   * @param options output options.
    */
   void formatProtocol(
       PrintStream out,
@@ -41,21 +48,38 @@ public interface OutputFormatter {
   /**
    * Formats a message with a specific type.
    *
-   * @param out the output stream (stdout or stderr depending on type)
-   * @param type the semantic type of the message
-   * @param message the message text
-   * @param options output options
+   * @param out the output stream (stdout or stderr depending on type).
+   * @param type the semantic type of the message.
+   * @param message the message text.
+   * @param options output options.
    */
   void formatMessage(PrintStream out, OutputType type, String message, OutputOptions options);
 
   /**
+   * Formats a structured error from an exception.
+   *
+   * <p>The default implementation delegates to {@link #formatMessage} with {@link
+   * OutputType#ERROR}. Implementations that support structured error output (e.g., JSON) should
+   * override this to include error classification details.
+   *
+   * @param out the output stream.
+   * @param exception the exception that caused the error.
+   * @param message the human-readable error message.
+   * @param options output options.
+   */
+  default void formatError(
+      PrintStream out, Exception exception, String message, OutputOptions options) {
+    formatMessage(out, OutputType.ERROR, message, options);
+  }
+
+  /**
    * Formats register data as a table.
    *
-   * @param out the output stream
-   * @param registers the register byte array
-   * @param startAddress the starting address
-   * @param timestamp the timestamp when the data was received, or null to use current time
-   * @param options output options
+   * @param out the output stream.
+   * @param registers the register byte array.
+   * @param startAddress the starting address.
+   * @param timestamp the timestamp when the data was received, or null to use current time.
+   * @param options output options.
    */
   void formatRegisterTable(
       PrintStream out,
@@ -67,12 +91,12 @@ public interface OutputFormatter {
   /**
    * Formats coil/discrete input data as a table.
    *
-   * @param out the output stream
-   * @param coilBytes the coil byte array
-   * @param startAddress the starting address
-   * @param quantity the number of coils
-   * @param timestamp the timestamp when the data was received, or null to use current time
-   * @param options output options
+   * @param out the output stream.
+   * @param coilBytes the coil byte array.
+   * @param startAddress the starting address.
+   * @param quantity the number of coils.
+   * @param timestamp the timestamp when the data was received, or null to use current time.
+   * @param options output options.
    */
   void formatCoilTable(
       PrintStream out,
@@ -85,9 +109,9 @@ public interface OutputFormatter {
   /**
    * Formats scan results.
    *
-   * @param out the output stream
-   * @param results the list of scan results
-   * @param options output options
+   * @param out the output stream.
+   * @param results the list of scan results.
+   * @param options output options.
    */
   void formatScanResults(PrintStream out, List<ScanResult> results, OutputOptions options);
 }

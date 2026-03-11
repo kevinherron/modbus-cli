@@ -3,7 +3,10 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
+import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
+import java.time.Instant;
 import java.util.ArrayList;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -32,7 +35,15 @@ import picocli.CommandLine.ParentCommand;
  *
  * @see ReadHoldingRegistersCommand for reading a specific range of holding registers
  */
-@Command(name = "scan", description = "scan a range of registers using a sliding window")
+@Command(
+    name = "scan",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Uses repeated Modbus function code 03 (Read Holding Registers) requests.",
+      "Read-only and idempotent; safe to repeat without changing device state.",
+      "Example: modbus client <endpoint> scan 0 100 --size 10"
+    })
 public class ScanCommand implements Runnable {
 
   /** Starting address (inclusive) for the scan range. */
@@ -90,6 +101,7 @@ public class ScanCommand implements Runnable {
     var results = new ArrayList<ScanResult>();
 
     clientCommand.runWithClient(
+        "scan",
         (ModbusClient client, int unitId, OutputContext output) -> {
           for (int i = start; i < start + quantity; i += step) {
             int windowSize = Math.min(size, start + quantity - i);
@@ -104,7 +116,12 @@ public class ScanCommand implements Runnable {
 
             var request = new ReadHoldingRegistersRequest(i, windowSize);
 
+            output.protocol(request, Direction.SENT, null);
+
             ReadHoldingRegistersResponse response = client.readHoldingRegisters(unitId, request);
+            Instant responseTime = Instant.now();
+
+            output.protocol(response, Direction.RECEIVED, responseTime);
 
             results.add(new ScanResult(i, response.registers()));
           }

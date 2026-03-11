@@ -17,15 +17,22 @@ public interface OutputContext {
   /**
    * Sets the current iteration number for polling operations.
    *
-   * @param iteration the iteration number, or null for single operations
+   * @param iteration the iteration number, or null for single operations.
    */
   void setIteration(Integer iteration);
 
   /**
+   * Sets the command identifier for structured output (e.g., "client.rhr").
+   *
+   * @param command the command identifier.
+   */
+  void setCommand(String command);
+
+  /**
    * Outputs a protocol message (request or response).
    *
-   * @param pdu the message object
-   * @param direction whether it was sent or received
+   * @param pdu the message object.
+   * @param direction whether it was sent or received.
    * @param timestamp the timestamp when the message was sent/received, or null to use the current
    *     time.
    */
@@ -34,53 +41,66 @@ public interface OutputContext {
   /**
    * Outputs an informational message.
    *
-   * @param format the format string
-   * @param args format arguments
+   * @param format the format string.
+   * @param args format arguments.
    */
   void info(String format, Object... args);
 
   /**
    * Outputs a success message.
    *
-   * @param format the format string
-   * @param args format arguments
+   * @param format the format string.
+   * @param args format arguments.
    */
   void success(String format, Object... args);
 
   /**
    * Outputs a warning message.
    *
-   * @param format the format string
-   * @param args format arguments
+   * @param format the format string.
+   * @param args format arguments.
    */
   void warning(String format, Object... args);
 
   /**
    * Outputs an error message.
    *
-   * @param format the format string
-   * @param args format arguments
+   * @param format the format string.
+   * @param args format arguments.
    */
   void error(String format, Object... args);
 
   /**
+   * Outputs a structured error from an exception.
+   *
+   * <p>In JSON mode, this produces a structured error object with code, category, retryable flag,
+   * and optional details. In human mode, this behaves identically to {@link #error(String,
+   * Object...)}.
+   *
+   * @param exception the exception that caused the error.
+   * @param format the format string. for the human-readable message.
+   * @param args format arguments..
+   */
+  void error(Exception exception, String format, Object... args);
+
+  /**
    * Creates a builder for outputting register data as a table.
    *
-   * @return a register table builder
+   * @return a register table builder.
    */
   RegisterTableBuilder registerTable();
 
   /**
    * Creates a builder for outputting coil/discrete input data as a table.
    *
-   * @return a coil table builder
+   * @return a coil table builder.
    */
   CoilTableBuilder coilTable();
 
   /**
    * Creates a builder for outputting scan results.
    *
-   * @return a scan results builder
+   * @return a scan results builder.
    */
   ScanResultsBuilder scanResults();
 

@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -22,7 +23,16 @@ import picocli.CommandLine.ParentCommand;
  * @see WriteMultipleCoilsCommand for writing multiple coils (function code 15)
  * @see ReadCoilsCommand for reading coil values (function code 01)
  */
-@Command(name = "wsc", description = "Write Single Coil")
+@Command(
+    name = "wsc",
+    aliases = "write-single-coil",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 05 (Write Single Coil).",
+      "Mutating and idempotent when repeated with the same value.",
+      "Example: modbus client <endpoint> wsc 0 true"
+    })
 class WriteSingleCoilCommand implements Runnable {
 
   /** The address of the coil to write. Addressing is typically 0-based. */
@@ -42,6 +52,7 @@ class WriteSingleCoilCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "wsc",
         (ModbusClient client, int unitId, OutputContext output) -> {
           boolean coilValue = ValueParser.parseCoilValue(value);
 

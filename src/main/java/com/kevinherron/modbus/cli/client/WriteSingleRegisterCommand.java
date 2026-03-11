@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -22,7 +23,16 @@ import picocli.CommandLine.ParentCommand;
  * @see WriteMultipleRegistersCommand for writing multiple registers (function code 16)
  * @see ReadHoldingRegistersCommand for reading holding register values (function code 03)
  */
-@Command(name = "wsr", description = "Write Single Register")
+@Command(
+    name = "wsr",
+    aliases = "write-single-register",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 06 (Write Single Register).",
+      "Mutating and idempotent when repeated with the same value.",
+      "Example: modbus client <endpoint> wsr 0 1234"
+    })
 class WriteSingleRegisterCommand implements Runnable {
 
   /** The address of the register to write. Addressing is typically 0-based. */
@@ -41,6 +51,7 @@ class WriteSingleRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "wsr",
         (ModbusClient client, int unitId, OutputContext output) -> {
           int registerValue = ValueParser.parseRegisterValue(value);
 

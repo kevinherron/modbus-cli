@@ -208,21 +208,21 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 ### Available Subcommands
 
-#### Read Operations
+#### Read Operations (read-only, safe to retry)
 
-- `rc <address> <quantity>` - Read coils (FC 01)
-- `rdi <address> <quantity>` - Read discrete inputs (FC 02)
-- `rhr <address> <quantity>` - Read holding registers (FC 03)
-- `rir <address> <quantity>` - Read input registers (FC 04)
+- `rc` / `read-coils` `<address> <quantity>` - Read coils (FC 01)
+- `rdi` / `read-discrete-inputs` `<address> <quantity>` - Read discrete inputs (FC 02)
+- `rhr` / `read-holding-registers` `<address> <quantity>` - Read holding registers (FC 03)
+- `rir` / `read-input-registers` `<address> <quantity>` - Read input registers (FC 04)
 
-#### Write Operations
+#### Write Operations (mutating)
 
-- `wsc <address> <value>` - Write single coil (FC 05)
-- `wmc <address> <values...>` - Write multiple coils (FC 15)
-- `wsr <address> <value>` - Write single register (FC 06)
-- `wmr <address> <values...>` - Write multiple registers (FC 16)
-- `mwr <address> <and-mask> <or-mask>` - Mask write register (FC 22)
-- `rwmr <read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
+- `wsc` / `write-single-coil` `<address> <value>` - Write single coil (FC 05)
+- `wmc` / `write-multiple-coils` `<address> <values...>` - Write multiple coils (FC 15)
+- `wsr` / `write-single-register` `<address> <value>` - Write single register (FC 06)
+- `wmr` / `write-multiple-registers` `<address> <values...>` - Write multiple registers (FC 16)
+- `mwr` / `mask-write-register` `<address> <and-mask> <or-mask>` - Mask write register (FC 22)
+- `rwmr` / `read-write-multiple-registers` `<read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
 
 #### Other
 
@@ -233,6 +233,7 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 **Global Options:**
 
 - `--format <format>` - Output format: `human` (default), `json`
+- `--emit <mode>` - Control JSON output volume: `all` (default), `result`, `events`
 - `-v, --verbose` - Verbose mode - detailed output
 - `-q, --quiet` - Quiet mode - minimal output
 - `--no-color` - Disable ANSI color output
@@ -356,6 +357,20 @@ See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 - **error** / **warning** - Diagnostic messages
 
 All JSON output is newline-delimited (NDJSON) for easy streaming and parsing.
+
+## Exit Codes
+
+The CLI uses stable, documented exit codes for automation:
+
+| Code | Meaning                        | Example                                      |
+|------|--------------------------------|----------------------------------------------|
+| `0`  | Success                        | Command completed normally.                  |
+| `1`  | General failure (fallback)     | Unclassified Modbus error.                   |
+| `2`  | CLI usage error                | Invalid arguments, missing parameters.       |
+| `3`  | Connection/Setup failure       | Cannot connect to host, serial port busy.    |
+| `4`  | Modbus protocol failure        | Modbus exception response, CRC error.        |
+| `5`  | Timeout or interrupted         | Request timed out, operation interrupted.     |
+| `10` | Internal error                 | Unexpected exception, bug.                   |
 
 ## License
 

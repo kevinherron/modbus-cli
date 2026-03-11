@@ -4,6 +4,7 @@ import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
 import com.digitalpetri.modbus.pdu.ReadInputRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadInputRegistersResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import java.time.Instant;
@@ -23,7 +24,16 @@ import picocli.CommandLine.ParentCommand;
  *
  * @see ReadHoldingRegistersCommand for read/write holding registers (function code 03)
  */
-@Command(name = "rir", description = "Read Input Registers")
+@Command(
+    name = "rir",
+    aliases = "read-input-registers",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 04 (Read Input Registers).",
+      "Read-only and idempotent; safe to repeat without changing device state.",
+      "Example: modbus client <endpoint> rir 0 10"
+    })
 class ReadInputRegistersCommand implements Runnable {
 
   /**
@@ -57,10 +67,10 @@ class ReadInputRegistersCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient(this::executeRead);
+      clientCommand.runWithClient("rir", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling(this::executeRead, count, interval);
+      clientCommand.runWithClientPolling("rir", this::executeRead, count, interval);
     }
   }
 

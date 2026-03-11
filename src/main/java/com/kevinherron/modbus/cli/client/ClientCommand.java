@@ -9,6 +9,8 @@ import com.digitalpetri.modbus.exceptions.ModbusExecutionException;
 import com.digitalpetri.modbus.serial.client.SerialPortClientTransport;
 import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport;
 import com.kevinherron.modbus.cli.ModbusCommand;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
+import com.kevinherron.modbus.cli.ReportedCliException;
 import com.kevinherron.modbus.cli.SerialPortOptions;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.EndpointParser;
@@ -46,6 +48,12 @@ import picocli.CommandLine.ParentCommand;
  */
 @Command(
     name = "client",
+    description = {
+      "Connect to a Modbus endpoint and run a client subcommand.",
+      "The required <endpoint> positional parameter must appear before the subcommand."
+    },
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
     subcommands = {
       ReadCoilsCommand.class,
       ReadDiscreteInputsCommand.class,
@@ -66,7 +74,7 @@ public class ClientCommand {
   @Parameters(
       index = "0",
       description =
-          "endpoint (hostname, tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
+          "required connection target before the subcommand (hostname, tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
   String endpoint;
 
   @Option(
@@ -148,8 +156,8 @@ public class ClientCommand {
    *
    * @param command the Modbus operation to execute.
    */
-  public void runWithClient(ClientRunnable command) {
-    executeWithClient((client, output) -> command.run(client, unitId, output));
+  public void runWithClient(String commandName, ClientRunnable command) {
+    executeWithClient(commandName, (client, output) -> command.run(client, unitId, output));
   }
 
   /**
@@ -166,8 +174,10 @@ public class ClientCommand {
    * @param count the number of iterations to execute; 0 for infinite polling until interrupted.
    * @param intervalMs the target delay in milliseconds between the start of each iteration.
    */
-  public void runWithClientPolling(ClientRunnable command, int count, int intervalMs) {
+  public void runWithClientPolling(
+      String commandName, ClientRunnable command, int count, int intervalMs) {
     executeWithClient(
+        commandName,
         (client, output) -> {
           int iteration = 0;
           while (count == 0 || iteration < count) {
@@ -178,7 +188,7 @@ public class ClientCommand {
             try {
               command.run(client, unitId, output);
             } catch (Exception e) {
-              handleException(e, output);
+              throw handleException(e, output);
             }
 
             long duration = System.nanoTime() - start;
@@ -200,31 +210,32 @@ public class ClientCommand {
    *
    * @param action the operation to execute with the connected client.
    */
-  private void executeWithClient(ClientAction action) {
+  private void executeWithClient(String commandName, ClientAction action) {
     OutputContext output = parent.createOutputContext();
+    output.setCommand("client." + commandName);
 
     Endpoint resolvedEndpoint;
     try {
       resolvedEndpoint = EndpointParser.parse(endpoint, port);
     } catch (Exception e) {
-      handleException(e, output);
-      return;
+      throw handleException(e, output);
     }
 
     ModbusClient client;
     try {
       client = createClient(resolvedEndpoint);
     } catch (Exception e) {
-      handleException(e, output);
-      return;
+      throw handleException(e, output);
     }
 
     outputEndpointInfo(output, resolvedEndpoint);
     try {
       client.connect();
       action.execute(client, output);
+    } catch (ReportedCliException e) {
+      throw e;
     } catch (Exception e) {
-      handleException(e, output);
+      throw handleException(e, output);
     } finally {
       try {
         client.disconnect();
@@ -258,14 +269,16 @@ public class ClientCommand {
    * @param e the exception to handle.
    * @param output the output context for error display.
    */
-  private void handleException(Exception e, OutputContext output) {
+  private ReportedCliException handleException(Exception e, OutputContext output) {
     if (parent.verbose) {
       var sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
-      output.error("%s", sw.toString());
+      output.error(e, "%s", sw.toString());
     } else {
-      output.error("%s", e.getMessage());
+      output.error(e, "%s", e.getMessage());
     }
+
+    return new ReportedCliException(e);
   }
 
   private void outputEndpointInfo(OutputContext output, Endpoint resolvedEndpoint) {
