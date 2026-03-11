@@ -31,11 +31,6 @@ public class ModbusCommand {
   OutputFormat format = OutputFormat.HUMAN;
 
   @Option(
-      names = {"-q", "--quiet"},
-      description = "quiet mode - minimal output")
-  boolean quiet = false;
-
-  @Option(
       names = {"-v", "--verbose"},
       description = "verbose mode - detailed output")
   public boolean verbose = false;
@@ -59,7 +54,7 @@ public class ModbusCommand {
           case JSON -> new JsonFormatter();
         };
 
-    var options = new OutputOptions(format, verbose, quiet, !noColor, emitMode);
+    var options = new OutputOptions(format, verbose, !noColor, emitMode);
 
     return new DefaultOutputContext(formatter, options);
   }

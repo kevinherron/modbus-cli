@@ -41,7 +41,7 @@ class DefaultOutputContextTest {
     var output =
         new DefaultOutputContext(
             new HumanFormatter(),
-            OutputOptions.human(false, false, false),
+            OutputOptions.human(false, false),
             new PrintStream(stdoutCapture, true, StandardCharsets.UTF_8),
             new PrintStream(stderrCapture, true, StandardCharsets.UTF_8));
 

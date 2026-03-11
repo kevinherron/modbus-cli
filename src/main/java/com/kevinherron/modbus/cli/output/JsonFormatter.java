@@ -48,10 +48,6 @@ public class JsonFormatter implements OutputFormatter {
       @Nullable Instant timestamp,
       OutputOptions options) {
 
-    if (options.quiet()) {
-      return;
-    }
-
     // Encode PDU to hex bytes
     String pduHex = encodePduToHex(pdu);
     int functionCode = pdu.getFunctionCode();
@@ -93,10 +89,6 @@ public class JsonFormatter implements OutputFormatter {
   @Override
   public void formatMessage(
       PrintStream out, OutputType type, String message, OutputOptions options) {
-
-    if (options.quiet() && type == OutputType.INFO) {
-      return;
-    }
 
     Instant ts = Instant.now();
 

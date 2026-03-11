@@ -45,10 +45,6 @@ public class HumanFormatter implements OutputFormatter {
       Direction direction,
       @Nullable Instant timestamp,
       OutputOptions options) {
-    if (options.quiet()) {
-      return; // Skip protocol messages in quiet mode
-    }
-
     String arrow = direction.arrow();
     String prefix = getTimestampPrefix(timestamp);
     String formatted = prefix + arrow + " " + pdu;
@@ -64,11 +60,6 @@ public class HumanFormatter implements OutputFormatter {
   @Override
   public void formatMessage(
       PrintStream out, OutputType type, String message, OutputOptions options) {
-    // Respect quiet mode for INFO messages only
-    if (options.quiet() && type == OutputType.INFO) {
-      return;
-    }
-
     String prefix = getTimestampPrefix(null);
     String formatted = prefix + message;
 

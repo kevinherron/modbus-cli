@@ -159,7 +159,7 @@ public class ClientCommand {
    *
    * <p>This method handles the full client lifecycle: connect, execute the provided command, and
    * disconnect. Any exceptions during execution are passed to {@link #handleException} for
-   * appropriate error output based on verbose/quiet mode settings.
+   * appropriate error output based on verbose mode settings.
    *
    * @param command the Modbus operation to execute.
    */
