@@ -246,7 +246,7 @@ public class ClientCommand {
 
   /**
    * Internal callback for operations executed within the client lifecycle managed by {@link
-   * #executeWithClient(ClientAction)}.
+   * #executeWithClient(String, ClientAction)}.
    */
   private interface ClientAction {
 
