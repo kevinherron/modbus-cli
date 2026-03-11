@@ -40,35 +40,35 @@ public final class ErrorClassifier {
       }
     }
 
-    return new ErrorInfo("INTERNAL_ERROR", "internal", message, false, null);
+    return new ErrorInfo("INTERNAL_ERROR", "internal", message, null);
   }
 
   private static @Nullable ErrorInfo classifyDirect(Throwable error, String message) {
     return switch (error) {
-      case ParameterException _ -> new ErrorInfo("USAGE_ERROR", "usage", message, false, null);
+      case ParameterException _ -> new ErrorInfo("USAGE_ERROR", "usage", message, null);
       case IllegalArgumentException _ ->
-          new ErrorInfo("INVALID_ARGUMENT", "usage", message, false, null);
+          new ErrorInfo("INVALID_ARGUMENT", "usage", message, null);
       case ModbusResponseException mre -> {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("function_code", mre.getFunctionCode());
         details.put("exception_code", mre.getExceptionCode());
-        yield new ErrorInfo("MODBUS_EXCEPTION_RESPONSE", "protocol", message, false, details);
+        yield new ErrorInfo("MODBUS_EXCEPTION_RESPONSE", "protocol", message, details);
       }
       case ModbusCrcException _ ->
-          new ErrorInfo("MODBUS_CRC_ERROR", "protocol", message, true, null);
+          new ErrorInfo("MODBUS_CRC_ERROR", "protocol", message, null);
       case ModbusConnectException _ ->
-          new ErrorInfo("CONNECTION_FAILED", "connection", message, true, null);
+          new ErrorInfo("CONNECTION_FAILED", "connection", message, null);
       case ConnectException _ ->
-          new ErrorInfo("CONNECTION_REFUSED", "connection", message, true, null);
+          new ErrorInfo("CONNECTION_REFUSED", "connection", message, null);
       case NoRouteToHostException _ ->
-          new ErrorInfo("NO_ROUTE_TO_HOST", "connection", message, false, null);
+          new ErrorInfo("NO_ROUTE_TO_HOST", "connection", message, null);
       case UnknownHostException _ ->
-          new ErrorInfo("UNKNOWN_HOST", "connection", message, false, null);
-      case ModbusTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, true, null);
-      case SocketTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, true, null);
-      case TimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, true, null);
-      case InterruptedException _ -> new ErrorInfo("INTERRUPTED", "timeout", message, false, null);
-      case ModbusException _ -> new ErrorInfo("MODBUS_ERROR", "protocol", message, true, null);
+          new ErrorInfo("UNKNOWN_HOST", "connection", message, null);
+      case ModbusTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
+      case SocketTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
+      case TimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
+      case InterruptedException _ -> new ErrorInfo("INTERRUPTED", "timeout", message, null);
+      case ModbusException _ -> new ErrorInfo("MODBUS_ERROR", "protocol", message, null);
       default -> null;
     };
   }
@@ -79,13 +79,11 @@ public final class ErrorClassifier {
    * @param code stable symbolic error identifier.
    * @param category error category: usage, connection, protocol, timeout, or internal.
    * @param message human-readable error summary.
-   * @param retryable whether the operation may succeed if retried.
    * @param details optional command-specific context, or null.
    */
   public record ErrorInfo(
       String code,
       String category,
       String message,
-      boolean retryable,
       @Nullable Map<String, Object> details) {}
 }

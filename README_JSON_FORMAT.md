@@ -76,8 +76,7 @@ Errors in JSON mode are structured objects, not plain strings:
   "error": {
     "code": "TIMEOUT",
     "category": "timeout",
-    "message": "Request timed out after 5000ms",
-    "retryable": true
+    "message": "Request timed out after 5000ms"
   }
 }
 ```
@@ -89,26 +88,25 @@ Errors in JSON mode are structured objects, not plain strings:
 | `code`      | string  | Stable symbolic identifier (see table below).       |
 | `category`  | string  | `usage`, `connection`, `protocol`, `timeout`, or `internal`. |
 | `message`   | string  | Human-readable error summary.                       |
-| `retryable` | boolean | Whether the operation may succeed if retried.       |
 | `details`   | object  | Optional command-specific context.                  |
 
 ### Error Codes
 
-| Code                        | Category     | Retryable | Trigger                              |
-|-----------------------------|--------------|-----------|--------------------------------------|
-| `USAGE_ERROR`               | `usage`      | no        | Invalid CLI arguments.               |
-| `INVALID_ARGUMENT`          | `usage`      | no        | Invalid parameter value.             |
-| `CONNECTION_FAILED`         | `connection` | yes       | Cannot connect to Modbus device.     |
-| `CONNECTION_REFUSED`        | `connection` | yes       | TCP connection refused.              |
-| `NO_ROUTE_TO_HOST`          | `connection` | no        | No route to target host.             |
-| `UNKNOWN_HOST`              | `connection` | no        | DNS resolution failed.               |
-| `MODBUS_EXCEPTION_RESPONSE` | `protocol`   | no        | Device returned a Modbus exception.  |
-| `MODBUS_CRC_ERROR`          | `protocol`   | yes       | CRC mismatch (RTU).                  |
-| `MODBUS_ERROR`              | `protocol`   | yes       | Other Modbus protocol error.         |
-| `TIMEOUT`                   | `timeout`    | yes       | Request timed out.                   |
-| `INTERRUPTED`               | `timeout`    | no        | Operation was interrupted.           |
-| `INTERNAL_ERROR`            | `internal`   | no        | Unexpected internal error.           |
-| `UNKNOWN_ERROR`             | `internal`   | no        | Unclassified error.                  |
+| Code                        | Category     | Trigger                              |
+|-----------------------------|--------------|--------------------------------------|
+| `USAGE_ERROR`               | `usage`      | Invalid CLI arguments.               |
+| `INVALID_ARGUMENT`          | `usage`      | Invalid parameter value.             |
+| `CONNECTION_FAILED`         | `connection` | Cannot connect to Modbus device.     |
+| `CONNECTION_REFUSED`        | `connection` | TCP connection refused.              |
+| `NO_ROUTE_TO_HOST`          | `connection` | No route to target host.             |
+| `UNKNOWN_HOST`              | `connection` | DNS resolution failed.               |
+| `MODBUS_EXCEPTION_RESPONSE` | `protocol`   | Device returned a Modbus exception.  |
+| `MODBUS_CRC_ERROR`          | `protocol`   | CRC mismatch (RTU).                  |
+| `MODBUS_ERROR`              | `protocol`   | Other Modbus protocol error.         |
+| `TIMEOUT`                   | `timeout`    | Request timed out.                   |
+| `INTERRUPTED`               | `timeout`    | Operation was interrupted.           |
+| `INTERNAL_ERROR`            | `internal`   | Unexpected internal error.           |
+| `UNKNOWN_ERROR`             | `internal`   | Unclassified error.                  |
 
 For `MODBUS_EXCEPTION_RESPONSE`, the `details` field contains:
 

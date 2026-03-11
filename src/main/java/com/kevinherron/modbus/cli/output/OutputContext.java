@@ -73,9 +73,8 @@ public interface OutputContext {
   /**
    * Outputs a structured error from an exception.
    *
-   * <p>In JSON mode, this produces a structured error object with code, category, retryable flag,
-   * and optional details. In human mode, this behaves identically to {@link #error(String,
-   * Object...)}.
+   * <p>In JSON mode, this produces a structured error object with code, category, and optional
+   * details. In human mode, this behaves identically to {@link #error(String, Object...)}.
    *
    * @param exception the exception that caused the error.
    * @param format the format string. for the human-readable message.

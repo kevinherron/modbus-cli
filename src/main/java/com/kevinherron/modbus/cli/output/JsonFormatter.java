@@ -105,7 +105,6 @@ public class JsonFormatter implements OutputFormatter {
       error.put("code", "UNKNOWN_ERROR");
       error.put("category", "internal");
       error.put("message", message);
-      error.put("retryable", false);
       out.println(toJson(buildEnvelope("error", ts, null, error)));
     } else {
       Map<String, Object> data = new LinkedHashMap<>();
@@ -127,7 +126,6 @@ public class JsonFormatter implements OutputFormatter {
     error.put("code", info.code());
     error.put("category", info.category());
     error.put("message", info.message());
-    error.put("retryable", info.retryable());
     if (info.details() != null) {
       error.put("details", info.details());
     }
