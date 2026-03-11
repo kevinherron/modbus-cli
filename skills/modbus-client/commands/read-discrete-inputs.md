@@ -9,17 +9,17 @@ modbus --format json client <endpoint> [client-options] read-discrete-inputs <ad
 modbus --format json client <endpoint> [client-options] rdi <address> <quantity>
 ```
 
-| Argument     | Description                      |
-|--------------|----------------------------------|
-| `<address>`  | Starting address                 |
+| Argument     | Description                       |
+|--------------|-----------------------------------|
+| `<address>`  | Starting address                  |
 | `<quantity>` | Number of discrete inputs to read |
 
 ## Options
 
-| Option          | Description                                        | Default |
-|-----------------|----------------------------------------------------|---------|
-| `-c, --count`   | Number of times to repeat (0 = indefinite polling) | 1       |
-| `-i, --interval` | Interval between reads in milliseconds            | 1000    |
+| Option           | Description                                        | Default |
+|------------------|----------------------------------------------------|---------|
+| `-c, --count`    | Number of times to repeat (0 = indefinite polling) | 1       |
+| `-i, --interval` | Interval between reads in milliseconds             | 1000    |
 
 ## Examples
 
@@ -30,5 +30,37 @@ modbus --format json client localhost rdi 0 16
 ```
 
 ```json
-{"kind":"result","command":"client.read-discrete-inputs","invocation":{"id":"75112be7-...","sequence":4},"timestamp":"2026-03-11T20:51:01.627163Z","data":{"type":"coil_table","start_address":0,"quantity":16,"bytes":"5555","coils":[true,false,true,false,true,false,true,false,true,false,true,false,true,false,true,false]}}
+{
+  "kind": "result",
+  "command": "client.read-discrete-inputs",
+  "invocation": {
+    "id": "75112be7-...",
+    "sequence": 4
+  },
+  "timestamp": "2026-03-11T20:51:01.627163Z",
+  "data": {
+    "type": "coil_table",
+    "start_address": 0,
+    "quantity": 16,
+    "bytes": "5555",
+    "coils": [
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  }
+}
 ```

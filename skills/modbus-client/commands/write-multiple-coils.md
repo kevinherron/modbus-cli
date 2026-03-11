@@ -9,11 +9,11 @@ modbus --format json client <endpoint> [client-options] write-multiple-coils <ad
 modbus --format json client <endpoint> [client-options] wmc <address> <quantity> <values>
 ```
 
-| Argument     | Description                                      |
-|--------------|--------------------------------------------------|
-| `<address>`  | Starting address                                 |
-| `<quantity>` | Number of coils to write                         |
-| `<values>`   | Comma-separated coil values (no spaces)          |
+| Argument     | Description                             |
+|--------------|-----------------------------------------|
+| `<address>`  | Starting address                        |
+| `<quantity>` | Number of coils to write                |
+| `<values>`   | Comma-separated coil values (no spaces) |
 
 Values accept: `true`/`false`, `1`/`0`, `on`/`off` (case-insensitive).
 
@@ -25,10 +25,50 @@ Write 4 coils starting at address 0:
 modbus --format json client localhost wmc 0 4 true,false,true,false
 ```
 
-```json
-{"kind":"event","command":"client.write-multiple-coils","invocation":{"id":"5a3255d2-...","sequence":1},"timestamp":"2026-03-11T20:51:03.223305Z","data":{"type":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
-{"kind":"event","command":"client.write-multiple-coils","invocation":{"id":"5a3255d2-...","sequence":2},"timestamp":"2026-03-11T20:51:03.227992Z","data":{"type":"protocol","direction":"sent","function_code":15,"pdu":"0f000000040105"}}
-{"kind":"event","command":"client.write-multiple-coils","invocation":{"id":"5a3255d2-...","sequence":3},"timestamp":"2026-03-11T20:51:03.230701Z","data":{"type":"protocol","direction":"received","function_code":15,"pdu":"0f00000004"}}
+```json lines
+{
+  "kind": "event",
+  "command": "client.write-multiple-coils",
+  "invocation": {
+    "id": "5a3255d2-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:03.223305Z",
+  "data": {
+    "type": "info",
+    "message": "Hostname: localhost:502, Unit ID: 1"
+  }
+}
+{
+  "kind": "event",
+  "command": "client.write-multiple-coils",
+  "invocation": {
+    "id": "5a3255d2-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:03.227992Z",
+  "data": {
+    "type": "protocol",
+    "direction": "sent",
+    "function_code": 15,
+    "pdu": "0f000000040105"
+  }
+}
+{
+  "kind": "event",
+  "command": "client.write-multiple-coils",
+  "invocation": {
+    "id": "5a3255d2-...",
+    "sequence": 3
+  },
+  "timestamp": "2026-03-11T20:51:03.230701Z",
+  "data": {
+    "type": "protocol",
+    "direction": "received",
+    "function_code": 15,
+    "pdu": "0f00000004"
+  }
+}
 ```
 
 Using numeric values:
