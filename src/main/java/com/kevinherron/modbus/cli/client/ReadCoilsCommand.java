@@ -27,7 +27,7 @@ import picocli.CommandLine.ParentCommand;
  */
 @Command(
     name = "read-coils",
-    aliases = "read-coils",
+    aliases = "rc",
     mixinStandardHelpOptions = true,
     versionProvider = ModbusVersionProvider.class,
     description = {

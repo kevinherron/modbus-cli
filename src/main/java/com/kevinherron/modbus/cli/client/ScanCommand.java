@@ -60,19 +60,20 @@ public class ScanCommand implements Runnable {
   /** Window size specifying the number of registers to read in each scan iteration. */
   @Option(
       names = "--size",
+      defaultValue = "1",
       description = "window size, i.e. number of registers to read in each window")
-  Integer size;
+  int size;
 
   /**
-   * Step size specifying how many registers to advance the window between iterations. When not
-   * specified, defaults to the window size for non-overlapping windows. Use a smaller step than
-   * size for overlapping windows.
+   * Step size specifying how many registers to advance the window between iterations. Use a smaller
+   * step than size for overlapping windows, or a larger step to skip addresses between windows.
    */
   @Option(
       names = "--step",
+      defaultValue = "1",
       description =
           "step size, i.e. number of registers to move the window forward by on each step")
-  Integer step;
+  int step;
 
   /**
    * Whether to include partial windows at the end of the range. When true (default), the final
@@ -89,13 +90,6 @@ public class ScanCommand implements Runnable {
 
   @Override
   public void run() {
-    if (size == null) {
-      size = 10;
-    }
-    if (step == null) {
-      step = size;
-    }
-
     int quantity = end - start;
 
     var results = new ArrayList<ScanResult>();
