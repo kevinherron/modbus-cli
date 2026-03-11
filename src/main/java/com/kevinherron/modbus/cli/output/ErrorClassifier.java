@@ -32,11 +32,20 @@ public final class ErrorClassifier {
    * @return the classified error information.
    */
   public static ErrorInfo classify(Exception exception, String message) {
-    // Walk the cause chain to find the most specific classification
+    // Walk the cause chain to find the most specific classification.
+    // Generic ModbusException is handled as a fallback after the full
+    // chain has been examined, so it doesn't shadow more specific
+    // inner causes like ConnectException.
     for (Throwable error = exception; error != null; error = error.getCause()) {
       ErrorInfo info = classifyDirect(error, message);
       if (info != null) {
         return info;
+      }
+    }
+
+    for (Throwable error = exception; error != null; error = error.getCause()) {
+      if (error instanceof ModbusException) {
+        return new ErrorInfo("MODBUS_ERROR", "protocol", message, null);
       }
     }
 
@@ -64,7 +73,6 @@ public final class ErrorClassifier {
       case SocketTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
       case TimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
       case InterruptedException _ -> new ErrorInfo("INTERRUPTED", "timeout", message, null);
-      case ModbusException _ -> new ErrorInfo("MODBUS_ERROR", "protocol", message, null);
       default -> null;
     };
   }

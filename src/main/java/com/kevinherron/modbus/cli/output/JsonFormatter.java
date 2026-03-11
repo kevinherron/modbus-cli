@@ -215,7 +215,7 @@ public class JsonFormatter implements OutputFormatter {
   /**
    * Builds the common JSON envelope structure.
    *
-   * @param kind the record kind: "result", "event", "error", or "summary".
+   * @param kind the record kind: "result", "event", or "error".
    * @param timestamp the timestamp for this record.
    * @param data the data payload, or null if not applicable.
    * @param error the error payload, or null if not applicable.
