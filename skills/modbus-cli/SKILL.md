@@ -119,7 +119,7 @@ envelope with the following fields:
 | `data`                 | Payload for `"event"` and `"result"` kinds — shape depends on command (see below)    |
 | `error`                | Payload for `"error"` kind — contains `code`, `category`, `message`, and opt. `details` |
 
-Result example — reading five holding registers with `--format json --emit result`:
+Result example — reading 5 holding registers with `--format json --emit result`:
 
 ```json
 {

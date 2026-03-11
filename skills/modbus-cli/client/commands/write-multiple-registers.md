@@ -15,6 +15,11 @@ modbus --format json client <endpoint> [client-options] wmr <address> <quantity>
 | `<quantity>` | Number of registers to write                    |
 | `<values>`   | Comma-separated register values, decimal or hex |
 
+> **Important:** All three positional arguments are required. A common mistake is omitting
+> `<quantity>` and passing values as the second argument:
+> - Wrong: `wmr 0 100,200,300`
+> - Right: `wmr 0 3 100,200,300`
+
 ## Examples
 
 Write 3 registers starting at address 0:

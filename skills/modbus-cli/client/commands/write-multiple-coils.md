@@ -17,6 +17,11 @@ modbus --format json client <endpoint> [client-options] wmc <address> <quantity>
 
 Values accept: `true`/`false`, `1`/`0`, `on`/`off` (case-insensitive).
 
+> **Important:** All three positional arguments are required. A common mistake is omitting
+> `<quantity>` and passing values as the second argument:
+> - Wrong: `wmc 0 true,false,true`
+> - Right: `wmc 0 3 true,false,true`
+
 ## Examples
 
 Write 4 coils starting at address 0:

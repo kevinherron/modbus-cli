@@ -1,6 +1,6 @@
 # read-write-multiple-registers / rwmr (FC 23)
 
-Atomic read and write of holding registers in a single transaction. The write happens first,
+Atomic read and write of holding registers in a single transaction. Writing happens first,
 then the read, but both occur in the same request/response cycle. Returns a `register_table`
 result for the read portion.
 
