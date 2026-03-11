@@ -1,4 +1,4 @@
-# JSON Output Format (Schema 2.0)
+# JSON Output Format
 
 The modbus-cli tool supports JSON output format via the `--format=json` flag. This format is
 designed for machine parsing and automation.
@@ -9,14 +9,13 @@ designed for machine parsing and automation.
 modbus --format=json client <hostname> <command> [args...]
 ```
 
-## Schema Version 2.0 Envelope
+## JSON Envelope
 
 All JSON output is emitted as newline-delimited JSON objects (NDJSON). Every record uses a common
 envelope structure:
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "result | event | error",
   "command": "client.read-holding-registers",
   "invocation": {
@@ -34,7 +33,6 @@ envelope structure:
 
 | Field              | Type   | Description                                                           |
 |--------------------|--------|-----------------------------------------------------------------------|
-| `schema_version`   | string | Always `"2.0"`.                                                       |
 | `kind`             | string | Record type: `"result"`, `"event"`, or `"error"`.                     |
 | `command`          | string | The command that produced this record (e.g., `"client.read-holding-registers"`). |
 | `invocation.id`    | string | UUID unique to this CLI invocation.                                   |
@@ -68,7 +66,6 @@ Errors in JSON mode are structured objects, not plain strings:
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "error",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 3 },
@@ -134,7 +131,6 @@ Output from register read operations (holding registers, input registers).
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "result",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 3 },
@@ -165,7 +161,6 @@ Output from coil/discrete input read operations.
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "result",
   "command": "client.read-coils",
   "invocation": { "id": "...", "sequence": 3 },
@@ -196,7 +191,6 @@ Output from scan operations that read multiple register windows.
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "result",
   "command": "client.scan",
   "invocation": { "id": "...", "sequence": 5 },
@@ -236,7 +230,6 @@ Modbus request and response messages with raw PDU bytes.
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "event",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },
@@ -278,7 +271,6 @@ Connection and status information.
 
 ```json
 {
-  "schema_version": "2.0",
   "kind": "event",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },

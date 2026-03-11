@@ -236,7 +236,6 @@ public class JsonFormatter implements OutputFormatter {
       @Nullable Map<String, Object> error) {
 
     Map<String, Object> envelope = new LinkedHashMap<>();
-    envelope.put("schema_version", "2.0");
     envelope.put("kind", kind);
     if (command != null) {
       envelope.put("command", command);

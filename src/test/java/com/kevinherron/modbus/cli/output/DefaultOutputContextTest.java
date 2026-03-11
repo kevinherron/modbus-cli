@@ -27,7 +27,6 @@ class DefaultOutputContextTest {
     String stdout = stdoutCapture.toString(StandardCharsets.UTF_8);
     String stderr = stderrCapture.toString(StandardCharsets.UTF_8);
 
-    assertTrue(stdout.contains("\"schema_version\":\"2.0\""));
     assertTrue(stdout.contains("\"kind\":\"event\""));
     assertTrue(stdout.contains("\"message\":\"warning message\""));
     assertTrue(stdout.contains("\"kind\":\"error\""));

@@ -46,24 +46,20 @@ public final class ErrorClassifier {
   private static @Nullable ErrorInfo classifyDirect(Throwable error, String message) {
     return switch (error) {
       case ParameterException _ -> new ErrorInfo("USAGE_ERROR", "usage", message, null);
-      case IllegalArgumentException _ ->
-          new ErrorInfo("INVALID_ARGUMENT", "usage", message, null);
+      case IllegalArgumentException _ -> new ErrorInfo("INVALID_ARGUMENT", "usage", message, null);
       case ModbusResponseException mre -> {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("function_code", mre.getFunctionCode());
         details.put("exception_code", mre.getExceptionCode());
         yield new ErrorInfo("MODBUS_EXCEPTION_RESPONSE", "protocol", message, details);
       }
-      case ModbusCrcException _ ->
-          new ErrorInfo("MODBUS_CRC_ERROR", "protocol", message, null);
+      case ModbusCrcException _ -> new ErrorInfo("MODBUS_CRC_ERROR", "protocol", message, null);
       case ModbusConnectException _ ->
           new ErrorInfo("CONNECTION_FAILED", "connection", message, null);
-      case ConnectException _ ->
-          new ErrorInfo("CONNECTION_REFUSED", "connection", message, null);
+      case ConnectException _ -> new ErrorInfo("CONNECTION_REFUSED", "connection", message, null);
       case NoRouteToHostException _ ->
           new ErrorInfo("NO_ROUTE_TO_HOST", "connection", message, null);
-      case UnknownHostException _ ->
-          new ErrorInfo("UNKNOWN_HOST", "connection", message, null);
+      case UnknownHostException _ -> new ErrorInfo("UNKNOWN_HOST", "connection", message, null);
       case ModbusTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
       case SocketTimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
       case TimeoutException _ -> new ErrorInfo("TIMEOUT", "timeout", message, null);
@@ -82,8 +78,5 @@ public final class ErrorClassifier {
    * @param details optional command-specific context, or null.
    */
   public record ErrorInfo(
-      String code,
-      String category,
-      String message,
-      @Nullable Map<String, Object> details) {}
+      String code, String category, String message, @Nullable Map<String, Object> details) {}
 }
