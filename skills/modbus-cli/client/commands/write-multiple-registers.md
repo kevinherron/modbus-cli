@@ -5,8 +5,8 @@ Write multiple 16-bit holding registers. Emits protocol events only (no result o
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] write-multiple-registers <address> <quantity> <values>
-modbus --format json client <endpoint> [client-options] wmr <address> <quantity> <values>
+modbus --json client <endpoint> [client-options] write-multiple-registers <address> <quantity> <values>
+modbus --json client <endpoint> [client-options] wmr <address> <quantity> <values>
 ```
 
 | Argument     | Description                                     |
@@ -25,7 +25,7 @@ modbus --format json client <endpoint> [client-options] wmr <address> <quantity>
 Write 3 registers starting at address 0:
 
 ```bash
-modbus --format json client localhost wmr 0 3 100,200,300
+modbus --json client localhost wmr 0 3 100,200,300
 ```
 
 ```json lines
@@ -77,5 +77,5 @@ modbus --format json client localhost wmr 0 3 100,200,300
 Using hex values:
 
 ```bash
-modbus --format json client localhost wmr 0 2 0xFF,0x00
+modbus --json client localhost wmr 0 2 0xFF,0x00
 ```

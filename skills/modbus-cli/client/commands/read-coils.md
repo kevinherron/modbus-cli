@@ -5,8 +5,8 @@ Read coil status bits. Returns a `coil_table` result with boolean values.
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] read-coils <address> <quantity>
-modbus --format json client <endpoint> [client-options] rc <address> <quantity>
+modbus --json client <endpoint> [client-options] read-coils <address> <quantity>
+modbus --json client <endpoint> [client-options] rc <address> <quantity>
 ```
 
 | Argument     | Description             |
@@ -26,7 +26,7 @@ modbus --format json client <endpoint> [client-options] rc <address> <quantity>
 Read 10 coils starting at address 0:
 
 ```bash
-modbus --format json client localhost read-coils 0 10
+modbus --json client localhost read-coils 0 10
 ```
 
 ```json
@@ -62,7 +62,7 @@ modbus --format json client localhost read-coils 0 10
 Read 8 coils at address 100 with a 2-second timeout:
 
 ```bash
-modbus --format json client localhost -t 2000 read-coils 100 8
+modbus --json client localhost -t 2000 read-coils 100 8
 ```
 
 ```json

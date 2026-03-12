@@ -18,17 +18,17 @@ Modbus CLI.
 
 Assume the `modbus` executable is available on `$PATH`.
 
-**Always use `--format json --emit result`** when running commands programmatically or as an agent.
+**Always use `--json --emit result`** when running commands programmatically or as an agent.
 JSON output is machine-readable and structured, making it reliable to parse. The `--emit result`
 flag filters out protocol events so you receive only the final result object. For write commands
-(which produce no result object), use `--format json` without `--emit result` to see protocol
+(which produce no result object), use `--json` without `--emit result` to see protocol
 events confirming success.
 
 ## Global Options
 
 | Option                       | Description                       | Default |
 |------------------------------|-----------------------------------|---------|
-| `--format human\|json`       | Output format                     | `human` |
+| `--json`                     | Output JSON instead of human text | false   |
 | `--emit all\|result\|events` | Output filtering                  | `all`   |
 | `-v, --verbose`              | Verbose output, full stack traces | false   |
 | `--no-color`                 | Disable ANSI colors               | false   |
@@ -108,7 +108,7 @@ default 1000).
 
 ### JSON Output Format
 
-With `--format json`, output is NDJSON (one JSON object per line). Every line has a common
+With `--json`, output is NDJSON (one JSON object per line). Every line has a common
 envelope with the following fields:
 
 | Field                  | Description                                                                             |
@@ -122,7 +122,7 @@ envelope with the following fields:
 | `data`                 | Payload for `"event"` and `"result"` kinds — shape depends on command (see below)       |
 | `error`                | Payload for `"error"` kind — contains `code`, `category`, `message`, and opt. `details` |
 
-Result example — reading 5 holding registers with `--format json --emit result`:
+Result example — reading 5 holding registers with `--json --emit result`:
 
 ```json
 {
@@ -231,8 +231,8 @@ modbus server rtu:/dev/ttyUSB0 --baud 19200     # RTU on serial port
 ## Gotchas
 
 1. **Option placement**: client options must go BEFORE the subcommand, not after.
-    - Wrong: `modbus --format json client localhost rhr 0 5 --timeout 1000`
-    - Right: `modbus --format json client localhost -t 1000 rhr 0 5`
+    - Wrong: `modbus --json client localhost rhr 0 5 --timeout 1000`
+    - Right: `modbus --json client localhost -t 1000 rhr 0 5`
 
 2. **Register value truncation**: values exceeding 16 bits are silently truncated
    (e.g., `999999` becomes `16959`).

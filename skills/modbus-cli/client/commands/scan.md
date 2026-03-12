@@ -6,7 +6,7 @@ step, advancing by `--step` addresses. Returns a `scan_results` result with all 
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] scan <start> <end> [options]
+modbus --json client <endpoint> [client-options] scan <start> <end> [options]
 ```
 
 | Argument  | Description                  |
@@ -30,23 +30,23 @@ windows at range end). If `--step` < `--size`, windows overlap.
 Scan addresses 0-99 one register at a time (default size=1, step=1):
 
 ```bash
-modbus --format json client localhost scan 0 100
+modbus --json client localhost scan 0 100
 ```
 
 Scan addresses 0-99 in windows of 10:
 
 ```bash
-modbus --format json client localhost scan 0 100 --size 10 --step 10
+modbus --json client localhost scan 0 100 --size 10 --step 10
 ```
 
 Scan with overlapping windows (size 20, step 10):
 
 ```bash
-modbus --format json client localhost scan 0 100 --size 20 --step 10
+modbus --json client localhost scan 0 100 --size 20 --step 10
 ```
 
 Scan a large range with bigger windows:
 
 ```bash
-modbus --format json client localhost scan 0 1000 --size 50 --step 50
+modbus --json client localhost scan 0 1000 --size 50 --step 50
 ```

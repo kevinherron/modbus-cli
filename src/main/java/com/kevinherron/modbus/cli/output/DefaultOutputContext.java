@@ -185,8 +185,7 @@ public record DefaultOutputContext(
   }
 
   private PrintStream messageStream(OutputType type) {
-    if (options.format() == OutputFormat.JSON
-        && (type == OutputType.WARNING || type == OutputType.ERROR)) {
+    if (options.json() && (type == OutputType.WARNING || type == OutputType.ERROR)) {
       return stdout;
     }
 

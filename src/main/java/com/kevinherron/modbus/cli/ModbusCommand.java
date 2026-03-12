@@ -7,8 +7,6 @@ import com.kevinherron.modbus.cli.output.EmitModeConverter;
 import com.kevinherron.modbus.cli.output.HumanFormatter;
 import com.kevinherron.modbus.cli.output.JsonFormatter;
 import com.kevinherron.modbus.cli.output.OutputContext;
-import com.kevinherron.modbus.cli.output.OutputFormat;
-import com.kevinherron.modbus.cli.output.OutputFormatConverter;
 import com.kevinherron.modbus.cli.output.OutputFormatter;
 import com.kevinherron.modbus.cli.output.OutputOptions;
 import com.kevinherron.modbus.cli.server.ServerCommand;
@@ -25,10 +23,9 @@ import picocli.CommandLine.Option;
 public class ModbusCommand {
 
   @Option(
-      names = {"--format"},
-      description = "output format: human, json (default: human)",
-      converter = OutputFormatConverter.class)
-  OutputFormat format = OutputFormat.HUMAN;
+      names = {"--json"},
+      description = "use JSON output format")
+  boolean json = false;
 
   @Option(
       names = {"-v", "--verbose"},
@@ -48,13 +45,9 @@ public class ModbusCommand {
 
   /** Creates an OutputContext based on the command-line options. */
   public OutputContext createOutputContext() {
-    OutputFormatter formatter =
-        switch (format) {
-          case HUMAN -> new HumanFormatter();
-          case JSON -> new JsonFormatter();
-        };
+    OutputFormatter formatter = json ? new JsonFormatter() : new HumanFormatter();
 
-    var options = new OutputOptions(format, verbose, !noColor, emitMode);
+    var options = new OutputOptions(json, verbose, !noColor, emitMode);
 
     return new DefaultOutputContext(formatter, options);
   }

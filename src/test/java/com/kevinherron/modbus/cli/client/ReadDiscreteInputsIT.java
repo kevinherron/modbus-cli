@@ -25,8 +25,7 @@ public class ReadDiscreteInputsIT {
       // Read discrete inputs 100-109 (10 inputs)
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",
@@ -106,8 +105,7 @@ public class ReadDiscreteInputsIT {
       // Read discrete inputs 100-109 (10 inputs) 3 times with interval 0
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",

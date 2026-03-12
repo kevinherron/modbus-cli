@@ -5,8 +5,8 @@ Write multiple coils. Emits protocol events only (no result object).
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] write-multiple-coils <address> <quantity> <values>
-modbus --format json client <endpoint> [client-options] wmc <address> <quantity> <values>
+modbus --json client <endpoint> [client-options] write-multiple-coils <address> <quantity> <values>
+modbus --json client <endpoint> [client-options] wmc <address> <quantity> <values>
 ```
 
 | Argument     | Description                             |
@@ -27,7 +27,7 @@ Values accept: `true`/`false`, `1`/`0`, `on`/`off` (case-insensitive).
 Write 4 coils starting at address 0:
 
 ```bash
-modbus --format json client localhost wmc 0 4 true,false,true,false
+modbus --json client localhost wmc 0 4 true,false,true,false
 ```
 
 ```json lines
@@ -79,5 +79,5 @@ modbus --format json client localhost wmc 0 4 true,false,true,false
 Using numeric values:
 
 ```bash
-modbus --format json client localhost wmc 0 3 1,0,1
+modbus --json client localhost wmc 0 3 1,0,1
 ```

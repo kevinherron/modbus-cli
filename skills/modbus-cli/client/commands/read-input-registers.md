@@ -5,8 +5,8 @@ Read 16-bit input registers. Returns a `register_table` result.
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] read-input-registers <address> <quantity>
-modbus --format json client <endpoint> [client-options] rir <address> <quantity>
+modbus --json client <endpoint> [client-options] read-input-registers <address> <quantity>
+modbus --json client <endpoint> [client-options] rir <address> <quantity>
 ```
 
 | Argument     | Description                 |
@@ -26,7 +26,7 @@ modbus --format json client <endpoint> [client-options] rir <address> <quantity>
 Read 10 input registers starting at address 0:
 
 ```bash
-modbus --format json client localhost rir 0 10
+modbus --json client localhost rir 0 10
 ```
 
 ```json

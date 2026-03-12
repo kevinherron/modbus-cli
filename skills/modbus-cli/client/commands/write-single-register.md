@@ -5,8 +5,8 @@ Write a single 16-bit holding register. Emits protocol events only (no result ob
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] write-single-register <address> <value>
-modbus --format json client <endpoint> [client-options] wsr <address> <value>
+modbus --json client <endpoint> [client-options] write-single-register <address> <value>
+modbus --json client <endpoint> [client-options] wsr <address> <value>
 ```
 
 | Argument    | Description                               |
@@ -19,7 +19,7 @@ modbus --format json client <endpoint> [client-options] wsr <address> <value>
 Write decimal value:
 
 ```bash
-modbus --format json client localhost wsr 0 1234
+modbus --json client localhost wsr 0 1234
 ```
 
 ```json lines
@@ -71,5 +71,5 @@ modbus --format json client localhost wsr 0 1234
 Write hex value (equivalent to 1234 decimal):
 
 ```bash
-modbus --format json client localhost wsr 0 0x04D2
+modbus --json client localhost wsr 0 0x04D2
 ```

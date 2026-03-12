@@ -60,15 +60,7 @@ class ExitCodeTest {
   void jsonConnectionFailureWritesErrorRecordToStdout() {
     var result =
         CliTestRunner.execute(
-            "--format",
-            "json",
-            "client",
-            "127.0.0.1",
-            "-p",
-            "1",
-            "read-holding-registers",
-            "0",
-            "1");
+            "--json", "client", "127.0.0.1", "-p", "1", "read-holding-registers", "0", "1");
 
     assertEquals(3, result.exitCode());
     assertTrue(result.stderr().isBlank());

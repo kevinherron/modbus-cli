@@ -25,8 +25,7 @@ public class ReadCoilsIT {
       // Read coils 100-109 (10 coils)
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",
@@ -106,8 +105,7 @@ public class ReadCoilsIT {
       // Read coils 100-109 (10 coils) 3 times with interval 0
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",

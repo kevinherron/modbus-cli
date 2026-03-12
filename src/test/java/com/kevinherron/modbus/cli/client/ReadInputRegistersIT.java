@@ -24,8 +24,7 @@ public class ReadInputRegistersIT {
       // Read registers 100-104 (5 registers)
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",
@@ -103,8 +102,7 @@ public class ReadInputRegistersIT {
       // Read registers 100-104 (5 registers) 3 times with interval 0
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",

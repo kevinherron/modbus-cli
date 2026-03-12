@@ -1,12 +1,12 @@
 # JSON Output Format
 
-The modbus-cli tool supports JSON output format via the `--format=json` flag. This format is
+The modbus-cli tool supports JSON output format via the `--json` flag. This format is
 designed for machine parsing and automation.
 
 ## Usage
 
 ```bash
-modbus --format=json client <hostname> <command> [args...]
+modbus --json client <hostname> <command> [args...]
 ```
 
 ## JSON Envelope
@@ -310,27 +310,27 @@ Connection and status information.
 ### Extract register values with jq
 
 ```bash
-$ modbus --format=json --emit=result client localhost read-holding-registers 0 5 | jq '.data.registers'
+$ modbus --json --emit=result client localhost read-holding-registers 0 5 | jq '.data.registers'
 [0, 1, 2, 3, 4]
 ```
 
 ### Extract raw bytes
 
 ```bash
-$ modbus --format=json --emit=result client localhost read-holding-registers 0 5 | jq -r '.data.bytes'
+$ modbus --json --emit=result client localhost read-holding-registers 0 5 | jq -r '.data.bytes'
 00000001000200030004
 ```
 
 ### Filter by record kind
 
 ```bash
-$ modbus --format=json client localhost read-holding-registers 0 5 | jq -c 'select(.kind == "result")'
+$ modbus --json client localhost read-holding-registers 0 5 | jq -c 'select(.kind == "result")'
 ```
 
 ### Poll and extract register values
 
 ```bash
-$ modbus --format=json --emit=result client localhost read-holding-registers 0 10 -c 5 | \
+$ modbus --json --emit=result client localhost read-holding-registers 0 10 -c 5 | \
   jq -c '{timestamp, registers: .data.registers}'
 ```
 

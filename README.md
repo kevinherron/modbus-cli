@@ -38,7 +38,7 @@ Offset (hex)	Bytes (hex)
 **Get JSON output for automation:**
 
 ```bash
-$ modbus --format=json client localhost read-holding-registers 0 10
+$ modbus --json client localhost read-holding-registers 0 10
 {"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"type":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
 {"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"type":"protocol","direction":"sent","function_code":3,"pdu":"030000000a"}}
 {"kind":"event","command":"client.read-holding-registers","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"type":"protocol","direction":"received","function_code":3,"pdu":"03140000000100020003000400050006000700080009"}}
@@ -48,12 +48,12 @@ $ modbus --format=json client localhost read-holding-registers 0 10
 **Write then read back a register:**
 
 ```bash
-$ modbus --format=json client localhost write-single-register 100 42
+$ modbus --json client localhost write-single-register 100 42
 {"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"type":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
 {"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"type":"protocol","direction":"sent","function_code":6,"pdu":"060064002a"}}
 {"kind":"event","command":"client.write-single-register","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}}
 
-$ modbus --format=json client localhost read-holding-registers 100 1
+$ modbus --json client localhost read-holding-registers 100 1
 {"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":4},"timestamp":"...","data":{"type":"register_table","start_address":100,"quantity":1,"bytes":"002a","registers":[42]}}
 ```
 
@@ -76,7 +76,7 @@ Address 	Values (hex, 2 bytes each)
 **Poll and filter JSON output with jq:**
 
 ```bash
-$ modbus --format=json client localhost read-holding-registers 0 10 -c 5 \
+$ modbus --json client localhost read-holding-registers 0 10 -c 5 \
     | jq -c 'select(.data.type == "register_table") | {timestamp, data: .data.registers}'
 {"timestamp":"2026-03-11T22:58:39.194847Z","data":[0,1,2,3,4,5,6,7,8,9]}
 {"timestamp":"2026-03-11T22:58:40.196611Z","data":[0,1,2,3,4,5,6,7,8,9]}
@@ -238,7 +238,7 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 **Global Options:**
 
-- `--format <format>` - Output format: `human` (default), `json`
+- `--json` - Use JSON output format (default: human-readable)
 - `--emit <mode>` - Control JSON output volume: `all` (default), `result`, `events`
 - `-v, --verbose` - Verbose mode - detailed output
 - `-q, --quiet` - Quiet mode - minimal output
@@ -351,7 +351,7 @@ mvn test
 
 ## JSON Output Format
 
-The CLI supports JSON output via `--format=json` for machine parsing and automation.
+The CLI supports JSON output via `--json` for machine parsing and automation.
 See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 
 ### Output Types

@@ -7,8 +7,8 @@ result for the read portion.
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] read-write-multiple-registers <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
-modbus --format json client <endpoint> [client-options] rwmr <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
+modbus --json client <endpoint> [client-options] read-write-multiple-registers <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
+modbus --json client <endpoint> [client-options] rwmr <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
 ```
 
 | Argument        | Description                                     |
@@ -24,7 +24,7 @@ modbus --format json client <endpoint> [client-options] rwmr <readAddr> <readQty
 Read 5 registers from address 0, write 3 registers starting at address 10:
 
 ```bash
-modbus --format json client localhost rwmr 0 5 10 3 100,200,300
+modbus --json client localhost rwmr 0 5 10 3 100,200,300
 ```
 
 ```json lines

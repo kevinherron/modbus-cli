@@ -17,7 +17,7 @@ class DefaultOutputContextTest {
     var output =
         new DefaultOutputContext(
             new JsonFormatter(),
-            OutputOptions.json(),
+            OutputOptions.jsonDefaults(),
             new PrintStream(stdoutCapture, true, StandardCharsets.UTF_8),
             new PrintStream(stderrCapture, true, StandardCharsets.UTF_8));
 

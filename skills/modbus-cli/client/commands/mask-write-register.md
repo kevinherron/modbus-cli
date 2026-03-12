@@ -10,8 +10,8 @@ Formula: `Result = (CurrentValue AND andMask) OR (orMask AND NOT andMask)`
 ## Usage
 
 ```
-modbus --format json client <endpoint> [client-options] mask-write-register <address> <andMask> <orMask>
-modbus --format json client <endpoint> [client-options] mwr <address> <andMask> <orMask>
+modbus --json client <endpoint> [client-options] mask-write-register <address> <andMask> <orMask>
+modbus --json client <endpoint> [client-options] mwr <address> <andMask> <orMask>
 ```
 
 | Argument    | Description                             |
@@ -25,7 +25,7 @@ modbus --format json client <endpoint> [client-options] mwr <address> <andMask> 
 Set the low byte while preserving the high byte:
 
 ```bash
-modbus --format json client localhost mwr 0 0xFF00 0x00FF
+modbus --json client localhost mwr 0 0xFF00 0x00FF
 ```
 
 ```json lines
