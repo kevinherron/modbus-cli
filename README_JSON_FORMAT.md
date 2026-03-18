@@ -233,7 +233,7 @@ Modbus request and response messages with raw PDU bytes.
   "data": {
     "direction": "sent",
     "function_code": 3,
-    "pdu": "030000000A"
+    "pdu": "030000000a"
   }
 }
 ```
@@ -242,7 +242,7 @@ Modbus request and response messages with raw PDU bytes.
 
 - `direction`: Either `"sent"` or `"received"`
 - `function_code`: Integer Modbus function code (1-127)
-- `pdu`: Hex-encoded PDU bytes (uppercase, no spaces or separators)
+- `pdu`: Hex-encoded PDU bytes (lowercase, no spaces or separators)
 
 **Common Function Codes:**
 
