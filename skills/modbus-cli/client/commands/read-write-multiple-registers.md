@@ -1,4 +1,4 @@
-# read-write-multiple-registers / rwmr (FC 23)
+# read-write-multiple-registers (FC 23)
 
 Atomic read and write of holding registers in a single transaction. Writing happens first,
 then the read, but both occur in the same request/response cycle. Returns a `register_table`
@@ -8,7 +8,6 @@ result for the read portion.
 
 ```
 modbus --json client <endpoint> [client-options] read-write-multiple-registers <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
-modbus --json client <endpoint> [client-options] rwmr <readAddr> <readQty> <writeAddr> <writeQty> <writeValues>
 ```
 
 | Argument        | Description                                     |
@@ -24,7 +23,7 @@ modbus --json client <endpoint> [client-options] rwmr <readAddr> <readQty> <writ
 Read 5 registers from address 0, write 3 registers starting at address 10:
 
 ```bash
-modbus --json client localhost rwmr 0 5 10 3 100,200,300
+modbus --json client localhost read-write-multiple-registers 0 5 10 3 100,200,300
 ```
 
 ```json lines

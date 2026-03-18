@@ -1,4 +1,4 @@
-# read-holding-registers / rhr (FC 03)
+# read-holding-registers (FC 03)
 
 Read 16-bit holding registers. Returns a `register_table` result.
 
@@ -6,7 +6,6 @@ Read 16-bit holding registers. Returns a `register_table` result.
 
 ```
 modbus --json client <endpoint> [client-options] read-holding-registers <address> <quantity>
-modbus --json client <endpoint> [client-options] rhr <address> <quantity>
 ```
 
 | Argument     | Description                 |
@@ -26,7 +25,7 @@ modbus --json client <endpoint> [client-options] rhr <address> <quantity>
 Read 10 holding registers starting at address 0:
 
 ```bash
-modbus --json client localhost rhr 0 10
+modbus --json client localhost read-holding-registers 0 10
 ```
 
 ```json
@@ -62,7 +61,7 @@ modbus --json client localhost rhr 0 10
 Read registers from a different unit ID:
 
 ```bash
-modbus --json client localhost --unit-id 2 rhr 40000 5
+modbus --json client localhost --unit-id 2 read-holding-registers 40000 5
 ```
 
 ```json
@@ -93,7 +92,7 @@ modbus --json client localhost --unit-id 2 rhr 40000 5
 Poll 5 times at 500ms intervals:
 
 ```bash
-modbus --json client localhost rhr 0 10 -c 5 -i 500
+modbus --json client localhost read-holding-registers 0 10 -c 5 -i 500
 ```
 
 Each iteration emits its own result with an `iteration` field in the invocation:
@@ -142,7 +141,7 @@ Each iteration emits its own result with an `iteration` field in the invocation:
 Suppress info and protocol events with `--emit result`:
 
 ```bash
-modbus --json --emit result client localhost rhr 0 10
+modbus --json --emit result client localhost read-holding-registers 0 10
 ```
 
 ```json

@@ -1,4 +1,4 @@
-# read-coils / rc (FC 01)
+# read-coils (FC 01)
 
 Read coil status bits. Returns a `coil_table` result with boolean values.
 
@@ -6,7 +6,6 @@ Read coil status bits. Returns a `coil_table` result with boolean values.
 
 ```
 modbus --json client <endpoint> [client-options] read-coils <address> <quantity>
-modbus --json client <endpoint> [client-options] rc <address> <quantity>
 ```
 
 | Argument     | Description             |

@@ -1,4 +1,4 @@
-# write-single-register / wsr (FC 06)
+# write-single-register (FC 06)
 
 Write a single 16-bit holding register. Emits protocol events only (no result object).
 
@@ -6,7 +6,6 @@ Write a single 16-bit holding register. Emits protocol events only (no result ob
 
 ```
 modbus --json client <endpoint> [client-options] write-single-register <address> <value>
-modbus --json client <endpoint> [client-options] wsr <address> <value>
 ```
 
 | Argument    | Description                               |
@@ -19,7 +18,7 @@ modbus --json client <endpoint> [client-options] wsr <address> <value>
 Write decimal value:
 
 ```bash
-modbus --json client localhost wsr 0 1234
+modbus --json client localhost write-single-register 0 1234
 ```
 
 ```json lines
@@ -71,5 +70,5 @@ modbus --json client localhost wsr 0 1234
 Write hex value (equivalent to 1234 decimal):
 
 ```bash
-modbus --json client localhost wsr 0 0x04D2
+modbus --json client localhost write-single-register 0 0x04D2
 ```

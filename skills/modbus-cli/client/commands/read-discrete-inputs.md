@@ -1,4 +1,4 @@
-# read-discrete-inputs / rdi (FC 02)
+# read-discrete-inputs (FC 02)
 
 Read discrete input bits. Returns a `coil_table` result with boolean values.
 
@@ -6,7 +6,6 @@ Read discrete input bits. Returns a `coil_table` result with boolean values.
 
 ```
 modbus --json client <endpoint> [client-options] read-discrete-inputs <address> <quantity>
-modbus --json client <endpoint> [client-options] rdi <address> <quantity>
 ```
 
 | Argument     | Description                       |
@@ -26,7 +25,7 @@ modbus --json client <endpoint> [client-options] rdi <address> <quantity>
 Read 16 discrete inputs starting at address 0:
 
 ```bash
-modbus --json client localhost rdi 0 16
+modbus --json client localhost read-discrete-inputs 0 16
 ```
 
 ```json

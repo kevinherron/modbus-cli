@@ -1,4 +1,4 @@
-# mask-write-register / mwr (FC 22)
+# mask-write-register (FC 22)
 
 Bitwise modify a single holding register. Emits protocol events only (no result object).
 
@@ -11,7 +11,6 @@ Formula: `Result = (CurrentValue AND andMask) OR (orMask AND NOT andMask)`
 
 ```
 modbus --json client <endpoint> [client-options] mask-write-register <address> <andMask> <orMask>
-modbus --json client <endpoint> [client-options] mwr <address> <andMask> <orMask>
 ```
 
 | Argument    | Description                             |
@@ -25,7 +24,7 @@ modbus --json client <endpoint> [client-options] mwr <address> <andMask> <orMask
 Set the low byte while preserving the high byte:
 
 ```bash
-modbus --json client localhost mwr 0 0xFF00 0x00FF
+modbus --json client localhost mask-write-register 0 0xFF00 0x00FF
 ```
 
 ```json lines

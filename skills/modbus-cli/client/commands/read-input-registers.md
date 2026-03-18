@@ -1,4 +1,4 @@
-# read-input-registers / rir (FC 04)
+# read-input-registers (FC 04)
 
 Read 16-bit input registers. Returns a `register_table` result.
 
@@ -6,7 +6,6 @@ Read 16-bit input registers. Returns a `register_table` result.
 
 ```
 modbus --json client <endpoint> [client-options] read-input-registers <address> <quantity>
-modbus --json client <endpoint> [client-options] rir <address> <quantity>
 ```
 
 | Argument     | Description                 |
@@ -26,7 +25,7 @@ modbus --json client <endpoint> [client-options] rir <address> <quantity>
 Read 10 input registers starting at address 0:
 
 ```bash
-modbus --json client localhost rir 0 10
+modbus --json client localhost read-input-registers 0 10
 ```
 
 ```json

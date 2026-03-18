@@ -82,23 +82,23 @@ Serial-only options: `--baud` (9600), `--data-bits` (8), `--parity` (N), `--stop
 All read commands support polling: `-c N` (repeat count, 0=indefinite) and `-i N` (interval ms,
 default 1000).
 
-| Command                  | Alias | FC | Returns        | Docs                                                                |
-|--------------------------|-------|----|----------------|---------------------------------------------------------------------|
-| `read-coils`             | `rc`  | 01 | coil_table     | [read-coils](client/commands/read-coils.md)                         |
-| `read-discrete-inputs`   | `rdi` | 02 | coil_table     | [read-discrete-inputs](client/commands/read-discrete-inputs.md)     |
-| `read-holding-registers` | `rhr` | 03 | register_table | [read-holding-registers](client/commands/read-holding-registers.md) |
-| `read-input-registers`   | `rir` | 04 | register_table | [read-input-registers](client/commands/read-input-registers.md)     |
+| Command                  | FC | Returns        | Docs                                                                |
+|--------------------------|----|----------------|---------------------------------------------------------------------|
+| `read-coils`             | 01 | coil_table     | [read-coils](client/commands/read-coils.md)                         |
+| `read-discrete-inputs`   | 02 | coil_table     | [read-discrete-inputs](client/commands/read-discrete-inputs.md)     |
+| `read-holding-registers` | 03 | register_table | [read-holding-registers](client/commands/read-holding-registers.md) |
+| `read-input-registers`   | 04 | register_table | [read-input-registers](client/commands/read-input-registers.md)     |
 
 ### Write Commands
 
-| Command                         | Alias  | FC | Docs                                                                              |
-|---------------------------------|--------|----|-----------------------------------------------------------------------------------|
-| `write-single-coil`             | `wsc`  | 05 | [write-single-coil](client/commands/write-single-coil.md)                         |
-| `write-multiple-coils`          | `wmc`  | 15 | [write-multiple-coils](client/commands/write-multiple-coils.md)                   |
-| `write-single-register`         | `wsr`  | 06 | [write-single-register](client/commands/write-single-register.md)                 |
-| `write-multiple-registers`      | `wmr`  | 16 | [write-multiple-registers](client/commands/write-multiple-registers.md)           |
-| `mask-write-register`           | `mwr`  | 22 | [mask-write-register](client/commands/mask-write-register.md)                     |
-| `read-write-multiple-registers` | `rwmr` | 23 | [read-write-multiple-registers](client/commands/read-write-multiple-registers.md) |
+| Command                         | FC | Docs                                                                              |
+|---------------------------------|----|-----------------------------------------------------------------------------------|
+| `write-single-coil`             | 05 | [write-single-coil](client/commands/write-single-coil.md)                         |
+| `write-multiple-coils`          | 15 | [write-multiple-coils](client/commands/write-multiple-coils.md)                   |
+| `write-single-register`         | 06 | [write-single-register](client/commands/write-single-register.md)                 |
+| `write-multiple-registers`      | 16 | [write-multiple-registers](client/commands/write-multiple-registers.md)           |
+| `mask-write-register`           | 22 | [mask-write-register](client/commands/mask-write-register.md)                     |
+| `read-write-multiple-registers` | 23 | [read-write-multiple-registers](client/commands/read-write-multiple-registers.md) |
 
 ### Scan
 
@@ -231,8 +231,8 @@ modbus server rtu:/dev/ttyUSB0 --baud 19200     # RTU on serial port
 ## Gotchas
 
 1. **Option placement**: client options must go BEFORE the subcommand, not after.
-    - Wrong: `modbus --json client localhost rhr 0 5 --timeout 1000`
-    - Right: `modbus --json client localhost -t 1000 rhr 0 5`
+    - Wrong: `modbus --json client localhost read-holding-registers 0 5 --timeout 1000`
+    - Right: `modbus --json client localhost -t 1000 read-holding-registers 0 5`
 
 2. **Register value truncation**: values exceeding 16 bits are silently truncated
    (e.g., `999999` becomes `16959`).

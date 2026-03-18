@@ -1,4 +1,4 @@
-# write-multiple-coils / wmc (FC 15)
+# write-multiple-coils (FC 15)
 
 Write multiple coils. Emits protocol events only (no result object).
 
@@ -6,7 +6,6 @@ Write multiple coils. Emits protocol events only (no result object).
 
 ```
 modbus --json client <endpoint> [client-options] write-multiple-coils <address> <quantity> <values>
-modbus --json client <endpoint> [client-options] wmc <address> <quantity> <values>
 ```
 
 | Argument     | Description                             |
@@ -19,15 +18,15 @@ Values accept: `true`/`false`, `1`/`0`, `on`/`off` (case-insensitive).
 
 > **Important:** All three positional arguments are required. A common mistake is omitting
 > `<quantity>` and passing values as the second argument:
-> - Wrong: `wmc 0 true,false,true`
-> - Right: `wmc 0 3 true,false,true`
+> - Wrong: `write-multiple-coils 0 true,false,true`
+> - Right: `write-multiple-coils 0 3 true,false,true`
 
 ## Examples
 
 Write 4 coils starting at address 0:
 
 ```bash
-modbus --json client localhost wmc 0 4 true,false,true,false
+modbus --json client localhost write-multiple-coils 0 4 true,false,true,false
 ```
 
 ```json lines
@@ -79,5 +78,5 @@ modbus --json client localhost wmc 0 4 true,false,true,false
 Using numeric values:
 
 ```bash
-modbus --json client localhost wmc 0 3 1,0,1
+modbus --json client localhost write-multiple-coils 0 3 1,0,1
 ```

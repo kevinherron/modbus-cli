@@ -1,4 +1,4 @@
-# write-single-coil / wsc (FC 05)
+# write-single-coil (FC 05)
 
 Write a single coil. Emits protocol events only (no result object).
 
@@ -6,7 +6,6 @@ Write a single coil. Emits protocol events only (no result object).
 
 ```
 modbus --json client <endpoint> [client-options] write-single-coil <address> <value>
-modbus --json client <endpoint> [client-options] wsc <address> <value>
 ```
 
 | Argument    | Description                                                        |
@@ -19,7 +18,7 @@ modbus --json client <endpoint> [client-options] wsc <address> <value>
 Write coil at address 0 to true:
 
 ```bash
-modbus --json client localhost wsc 0 true
+modbus --json client localhost write-single-coil 0 true
 ```
 
 ```json lines
@@ -71,6 +70,6 @@ modbus --json client localhost wsc 0 true
 Numeric and keyword values are also accepted:
 
 ```bash
-modbus --json client localhost wsc 0 1
-modbus --json client localhost wsc 0 on
+modbus --json client localhost write-single-coil 0 1
+modbus --json client localhost write-single-coil 0 on
 ```
