@@ -130,7 +130,7 @@ Result example — reading 5 holding registers with `--json --emit result`:
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "13eb6dda-...",
-    "sequence": 4
+    "sequence": 1
   },
   "timestamp": "2026-03-11T20:51:02.069600Z",
   "data": {

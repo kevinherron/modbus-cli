@@ -28,13 +28,41 @@ Read 16 discrete inputs starting at address 0:
 modbus --json client localhost read-discrete-inputs 0 16
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-discrete-inputs",
+  "invocation": {
+    "id": "75112be7-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:01.624839Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 2,
+    "pdu": "0200000010"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-discrete-inputs",
+  "invocation": {
+    "id": "75112be7-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:01.627163Z",
+  "data": {
+    "direction": "received",
+    "function_code": 2,
+    "pdu": "02025555"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-discrete-inputs",
   "invocation": {
     "id": "75112be7-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:01.627163Z",
   "data": {

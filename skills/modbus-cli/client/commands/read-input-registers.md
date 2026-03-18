@@ -28,13 +28,41 @@ Read 10 input registers starting at address 0:
 modbus --json client localhost read-input-registers 0 10
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-input-registers",
+  "invocation": {
+    "id": "98987aa3-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:02.487536Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 4,
+    "pdu": "040000000a"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-input-registers",
+  "invocation": {
+    "id": "98987aa3-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:02.489919Z",
+  "data": {
+    "direction": "received",
+    "function_code": 4,
+    "pdu": "04140000000100020003000400050006000700080009"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-input-registers",
   "invocation": {
     "id": "98987aa3-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:02.489919Z",
   "data": {

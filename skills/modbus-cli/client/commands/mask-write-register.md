@@ -29,28 +29,14 @@ modbus --json client localhost mask-write-register 0 0xFF00 0x00FF
 
 ```json lines
 {
-  "kind": "log",
+  "kind": "protocol",
   "command": "client.mask-write-register",
   "invocation": {
     "id": "7ec31479-...",
     "sequence": 1
   },
-  "timestamp": "2026-03-11T20:51:11.630868Z",
-  "data": {
-    "level": "info",
-    "message": "Hostname: localhost:502, Unit ID: 1"
-  }
-}
-{
-  "kind": "protocol",
-  "command": "client.mask-write-register",
-  "invocation": {
-    "id": "7ec31479-...",
-    "sequence": 2
-  },
   "timestamp": "2026-03-11T20:51:11.636942Z",
   "data": {
-
     "direction": "sent",
     "function_code": 22,
     "pdu": "160000ff0000ff"
@@ -61,11 +47,10 @@ modbus --json client localhost mask-write-register 0 0xFF00 0x00FF
   "command": "client.mask-write-register",
   "invocation": {
     "id": "7ec31479-...",
-    "sequence": 3
+    "sequence": 2
   },
   "timestamp": "2026-03-11T20:51:11.637629Z",
   "data": {
-
     "direction": "received",
     "function_code": 22,
     "pdu": "160000ff0000ff"

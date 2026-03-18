@@ -28,28 +28,14 @@ modbus --json client localhost read-write-multiple-registers 0 5 10 3 100,200,30
 
 ```json lines
 {
-  "kind": "log",
+  "kind": "protocol",
   "command": "client.read-write-multiple-registers",
   "invocation": {
     "id": "b6f9e8cb-...",
     "sequence": 1
   },
-  "timestamp": "2026-03-11T20:51:12.233480Z",
-  "data": {
-    "level": "info",
-    "message": "Hostname: localhost:502, Unit ID: 1"
-  }
-}
-{
-  "kind": "protocol",
-  "command": "client.read-write-multiple-registers",
-  "invocation": {
-    "id": "b6f9e8cb-...",
-    "sequence": 2
-  },
   "timestamp": "2026-03-11T20:51:12.238896Z",
   "data": {
-
     "direction": "sent",
     "function_code": 23,
     "pdu": "1700000005000a000306006400c8012c"
@@ -60,11 +46,10 @@ modbus --json client localhost read-write-multiple-registers 0 5 10 3 100,200,30
   "command": "client.read-write-multiple-registers",
   "invocation": {
     "id": "b6f9e8cb-...",
-    "sequence": 3
+    "sequence": 2
   },
   "timestamp": "2026-03-11T20:51:12.239342Z",
   "data": {
-
     "direction": "received",
     "function_code": 23,
     "pdu": "170a00ff0000012c00030004"
@@ -75,7 +60,7 @@ modbus --json client localhost read-write-multiple-registers 0 5 10 3 100,200,30
   "command": "client.read-write-multiple-registers",
   "invocation": {
     "id": "b6f9e8cb-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:12.239342Z",
   "data": {

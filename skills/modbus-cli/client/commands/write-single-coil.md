@@ -23,28 +23,14 @@ modbus --json client localhost write-single-coil 0 true
 
 ```json lines
 {
-  "kind": "log",
+  "kind": "protocol",
   "command": "client.write-single-coil",
   "invocation": {
     "id": "69685c1d-...",
     "sequence": 1
   },
-  "timestamp": "2026-03-11T20:51:02.778238Z",
-  "data": {
-    "level": "info",
-    "message": "Hostname: localhost:502, Unit ID: 1"
-  }
-}
-{
-  "kind": "protocol",
-  "command": "client.write-single-coil",
-  "invocation": {
-    "id": "69685c1d-...",
-    "sequence": 2
-  },
   "timestamp": "2026-03-11T20:51:02.783475Z",
   "data": {
-
     "direction": "sent",
     "function_code": 5,
     "pdu": "050000ff00"
@@ -55,11 +41,10 @@ modbus --json client localhost write-single-coil 0 true
   "command": "client.write-single-coil",
   "invocation": {
     "id": "69685c1d-...",
-    "sequence": 3
+    "sequence": 2
   },
   "timestamp": "2026-03-11T20:51:02.783964Z",
   "data": {
-
     "direction": "received",
     "function_code": 5,
     "pdu": "050000ff00"

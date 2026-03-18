@@ -54,7 +54,9 @@ $ modbus --json --emit all client localhost write-single-register 100 42
 {"kind":"protocol","command":"client.write-single-register","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"direction":"received","function_code":6,"pdu":"060064002a"}}
 
 $ modbus --json client localhost read-holding-registers 100 1
-{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":4},"timestamp":"...","data":{"start_address":100,"quantity":1,"bytes":"002a","registers":[42]}}
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"direction":"sent","function_code":3,"pdu":"0300640001"}}
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"direction":"received","function_code":3,"pdu":"0302002a"}}
+{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"start_address":100,"quantity":1,"bytes":"002a","registers":[42]}}
 ```
 
 **Scan a range of registers:**

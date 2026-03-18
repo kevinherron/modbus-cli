@@ -28,13 +28,41 @@ Read 10 coils starting at address 0:
 modbus --json client localhost read-coils 0 10
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-coils",
+  "invocation": {
+    "id": "c6dfecdf-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:00.093827Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 1,
+    "pdu": "010000000a"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-coils",
+  "invocation": {
+    "id": "c6dfecdf-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:00.096305Z",
+  "data": {
+    "direction": "received",
+    "function_code": 1,
+    "pdu": "01027401"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-coils",
   "invocation": {
     "id": "c6dfecdf-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:00.096305Z",
   "data": {
@@ -63,13 +91,41 @@ Read 8 coils at address 100 with a 2-second timeout:
 modbus --json client localhost -t 2000 read-coils 100 8
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-coils",
+  "invocation": {
+    "id": "fa9ce8db-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:01.113205Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 1,
+    "pdu": "0100640008"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-coils",
+  "invocation": {
+    "id": "fa9ce8db-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:01.115399Z",
+  "data": {
+    "direction": "received",
+    "function_code": 1,
+    "pdu": "010155"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-coils",
   "invocation": {
     "id": "fa9ce8db-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:01.115399Z",
   "data": {

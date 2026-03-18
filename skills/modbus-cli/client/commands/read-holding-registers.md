@@ -28,13 +28,41 @@ Read 10 holding registers starting at address 0:
 modbus --json client localhost read-holding-registers 0 10
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-holding-registers",
+  "invocation": {
+    "id": "13eb6dda-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:02.067134Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 3,
+    "pdu": "030000000a"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-holding-registers",
+  "invocation": {
+    "id": "13eb6dda-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:02.069600Z",
+  "data": {
+    "direction": "received",
+    "function_code": 3,
+    "pdu": "0314002a0000012c0003000400640006000700080009"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "13eb6dda-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:02.069600Z",
   "data": {
@@ -63,13 +91,41 @@ Read registers from a different unit ID:
 modbus --json client localhost --unit-id 2 read-holding-registers 40000 5
 ```
 
-```json
+```json lines
+{
+  "kind": "protocol",
+  "command": "client.read-holding-registers",
+  "invocation": {
+    "id": "981d582c-...",
+    "sequence": 1
+  },
+  "timestamp": "2026-03-11T20:51:25.663841Z",
+  "data": {
+    "direction": "sent",
+    "function_code": 3,
+    "pdu": "039c400005"
+  }
+}
+{
+  "kind": "protocol",
+  "command": "client.read-holding-registers",
+  "invocation": {
+    "id": "981d582c-...",
+    "sequence": 2
+  },
+  "timestamp": "2026-03-11T20:51:25.666287Z",
+  "data": {
+    "direction": "received",
+    "function_code": 3,
+    "pdu": "030a9c409c419c429c439c44"
+  }
+}
 {
   "kind": "result",
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "981d582c-...",
-    "sequence": 4
+    "sequence": 3
   },
   "timestamp": "2026-03-11T20:51:25.666287Z",
   "data": {
@@ -101,7 +157,7 @@ Each iteration emits its own result with an `iteration` field in the invocation:
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "e45c4677-...",
-    "sequence": 4,
+    "sequence": 3,
     "iteration": 1
   },
   "timestamp": "...",
@@ -119,7 +175,7 @@ Each iteration emits its own result with an `iteration` field in the invocation:
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "e45c4677-...",
-    "sequence": 7,
+    "sequence": 6,
     "iteration": 2
   },
   "timestamp": "...",
