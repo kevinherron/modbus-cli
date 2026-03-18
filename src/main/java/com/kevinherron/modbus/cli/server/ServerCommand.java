@@ -81,10 +81,7 @@ public class ServerCommand implements Runnable {
 
     NettyTcpServerTransport transport =
         NettyTcpServerTransport.create(
-            cfg -> {
-              cfg.bindAddress = tcp.hostname();
-              cfg.port = tcp.port();
-            });
+            cfg -> cfg.setBindAddress(tcp.hostname()).setPort(tcp.port()));
 
     var server = ModbusTcpServer.create(transport, services);
     server.start();
@@ -105,14 +102,14 @@ public class ServerCommand implements Runnable {
     var transport =
         SerialPortServerTransport.create(
             cfg -> {
-              cfg.serialPort = rtu.serialPort();
-              cfg.baudRate = serialOptions.baudRate;
-              cfg.dataBits = resolvedDataBits;
-              cfg.stopBits = resolvedStopBits;
-              cfg.parity = resolvedParity;
-            });
+              cfg.setSerialPort(rtu.serialPort())
+                  .setBaudRate(serialOptions.baudRate)
+                  .setDataBits(resolvedDataBits)
+                  .setStopBits(resolvedStopBits)
+                  .setParity(resolvedParity);
 
-    serialOptions.configureRs485(transport.getSerialPort());
+              serialOptions.configureRs485(cfg);
+            });
 
     var server = ModbusRtuServer.create(transport, services);
     server.start();

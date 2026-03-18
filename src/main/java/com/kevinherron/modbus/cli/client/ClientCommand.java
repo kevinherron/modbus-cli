@@ -112,14 +112,10 @@ public class ClientCommand {
   public ModbusTcpClient createTcpClient(String hostname, int tcpPort) {
     var transport =
         NettyTcpClientTransport.create(
-            cfg -> {
-              cfg.hostname = hostname;
-              cfg.port = tcpPort;
-              cfg.connectPersistent = false;
-            });
+            cfg -> cfg.setHostname(hostname).setPort(tcpPort).setConnectPersistent(false));
 
     ModbusClientConfig config =
-        ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
+        ModbusClientConfig.create(cfg -> cfg.setRequestTimeout(Duration.ofMillis(timeout)));
 
     return new ModbusTcpClient(config, transport);
   }
@@ -132,17 +128,17 @@ public class ClientCommand {
     var transport =
         SerialPortClientTransport.create(
             cfg -> {
-              cfg.serialPort = serialPort;
-              cfg.baudRate = serialOptions.baudRate;
-              cfg.dataBits = resolvedDataBits;
-              cfg.stopBits = resolvedStopBits;
-              cfg.parity = resolvedParity;
+              cfg.setSerialPort(serialPort)
+                  .setBaudRate(serialOptions.baudRate)
+                  .setDataBits(resolvedDataBits)
+                  .setStopBits(resolvedStopBits)
+                  .setParity(resolvedParity);
+
+              serialOptions.configureRs485(cfg);
             });
 
-    serialOptions.configureRs485(transport.getSerialPort());
-
     ModbusClientConfig config =
-        ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
+        ModbusClientConfig.create(cfg -> cfg.setRequestTimeout(Duration.ofMillis(timeout)));
 
     return new ModbusRtuClient(config, transport);
   }
@@ -228,12 +224,7 @@ public class ClientCommand {
       throw handleException(e, output);
     }
 
-    ModbusClient client;
-    try {
-      client = createClient(resolvedEndpoint);
-    } catch (Exception e) {
-      throw handleException(e, output);
-    }
+    ModbusClient client = createClient(resolvedEndpoint);
 
     outputEndpointInfo(output, resolvedEndpoint);
     try {
