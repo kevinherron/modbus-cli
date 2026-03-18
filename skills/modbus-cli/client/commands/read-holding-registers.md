@@ -38,7 +38,6 @@ modbus --json client localhost read-holding-registers 0 10
   },
   "timestamp": "2026-03-11T20:51:02.069600Z",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "002a0000012c0003000400640006000700080009",
@@ -74,7 +73,6 @@ modbus --json client localhost --unit-id 2 read-holding-registers 40000 5
   },
   "timestamp": "2026-03-11T20:51:25.666287Z",
   "data": {
-    "type": "register_table",
     "start_address": 40000,
     "quantity": 5,
     "bytes": "9c409c419c429c439c44",
@@ -108,7 +106,6 @@ Each iteration emits its own result with an `iteration` field in the invocation:
   },
   "timestamp": "...",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "...",
@@ -127,7 +124,6 @@ Each iteration emits its own result with an `iteration` field in the invocation:
   },
   "timestamp": "...",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "...",
@@ -154,7 +150,6 @@ modbus --json --emit result client localhost read-holding-registers 0 10
   },
   "timestamp": "2026-03-11T20:51:21.755366Z",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "002a0000012c0003000400640006000700080009",

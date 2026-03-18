@@ -38,7 +38,6 @@ modbus --json client localhost read-input-registers 0 10
   },
   "timestamp": "2026-03-11T20:51:02.489919Z",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "0000000100020003000400050006000700080009",

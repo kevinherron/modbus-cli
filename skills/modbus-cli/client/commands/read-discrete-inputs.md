@@ -38,7 +38,6 @@ modbus --json client localhost read-discrete-inputs 0 16
   },
   "timestamp": "2026-03-11T20:51:01.627163Z",
   "data": {
-    "type": "coil_table",
     "start_address": 0,
     "quantity": 16,
     "bytes": "5555",

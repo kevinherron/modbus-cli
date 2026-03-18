@@ -53,7 +53,6 @@ public class JsonFormatter implements OutputFormatter {
     int functionCode = pdu.getFunctionCode();
 
     Map<String, Object> data = new LinkedHashMap<>();
-    data.put("type", "protocol");
     data.put("direction", direction.name().toLowerCase());
     if (functionCode != -1) {
       data.put("function_code", functionCode);
@@ -61,7 +60,7 @@ public class JsonFormatter implements OutputFormatter {
     data.put("pdu", pduHex);
 
     Instant ts = timestamp != null ? timestamp : Instant.now();
-    out.println(toJson(buildEnvelope("event", ts, data, null)));
+    out.println(toJson(buildEnvelope("protocol", ts, data, null)));
   }
 
   private String encodePduToHex(ModbusPdu pdu) {
@@ -100,9 +99,9 @@ public class JsonFormatter implements OutputFormatter {
       out.println(toJson(buildEnvelope("error", ts, null, error)));
     } else {
       Map<String, Object> data = new LinkedHashMap<>();
-      data.put("type", type.name().toLowerCase());
+      data.put("level", type.name().toLowerCase());
       data.put("message", message);
-      out.println(toJson(buildEnvelope("event", ts, data, null)));
+      out.println(toJson(buildEnvelope("log", ts, data, null)));
     }
   }
 
@@ -142,7 +141,6 @@ public class JsonFormatter implements OutputFormatter {
     }
 
     Map<String, Object> data = new LinkedHashMap<>();
-    data.put("type", "register_table");
     data.put("start_address", startAddress);
     data.put("quantity", quantity);
     data.put("bytes", bytesToHex(registers));
@@ -169,7 +167,6 @@ public class JsonFormatter implements OutputFormatter {
     }
 
     Map<String, Object> data = new LinkedHashMap<>();
-    data.put("type", "coil_table");
     data.put("start_address", startAddress);
     data.put("quantity", quantity);
     data.put("bytes", bytesToHex(coilBytes));
@@ -205,7 +202,6 @@ public class JsonFormatter implements OutputFormatter {
     }
 
     Map<String, Object> data = new LinkedHashMap<>();
-    data.put("type", "scan_results");
     data.put("windows", windows);
 
     Instant ts = Instant.now();
@@ -215,7 +211,7 @@ public class JsonFormatter implements OutputFormatter {
   /**
    * Builds the common JSON envelope structure.
    *
-   * @param kind the record kind: "result", "event", or "error".
+   * @param kind the record kind: "result", "protocol", "log", or "error".
    * @param timestamp the timestamp for this record.
    * @param data the data payload, or null if not applicable.
    * @param error the error payload, or null if not applicable.

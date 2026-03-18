@@ -38,7 +38,6 @@ modbus --json client localhost read-coils 0 10
   },
   "timestamp": "2026-03-11T20:51:00.096305Z",
   "data": {
-    "type": "coil_table",
     "start_address": 0,
     "quantity": 10,
     "bytes": "7401",
@@ -74,7 +73,6 @@ modbus --json client localhost -t 2000 read-coils 100 8
   },
   "timestamp": "2026-03-11T20:51:01.115399Z",
   "data": {
-    "type": "coil_table",
     "start_address": 100,
     "quantity": 8,
     "bytes": "55",

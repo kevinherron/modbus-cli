@@ -36,7 +36,7 @@ public record DefaultOutputContext(
 
   @Override
   public void info(String format, Object... args) {
-    if (options.emitMode() == EmitMode.RESULT) {
+    if (options.emitMode() != EmitMode.ALL) {
       return;
     }
     String message = String.format(format, args);
@@ -45,7 +45,7 @@ public record DefaultOutputContext(
 
   @Override
   public void success(String format, Object... args) {
-    if (options.emitMode() == EmitMode.RESULT) {
+    if (options.emitMode() != EmitMode.ALL) {
       return;
     }
     String message = String.format(format, args);
@@ -54,7 +54,7 @@ public record DefaultOutputContext(
 
   @Override
   public void warning(String format, Object... args) {
-    if (options.emitMode() == EmitMode.RESULT) {
+    if (options.emitMode() != EmitMode.ALL) {
       return;
     }
     String message = String.format(format, args);
@@ -64,18 +64,12 @@ public record DefaultOutputContext(
 
   @Override
   public void error(String format, Object... args) {
-    if (options.emitMode() == EmitMode.EVENTS) {
-      return;
-    }
     String message = String.format(format, args);
     formatter.formatMessage(messageStream(OutputType.ERROR), OutputType.ERROR, message, options);
   }
 
   @Override
   public void error(Exception exception, String format, Object... args) {
-    if (options.emitMode() == EmitMode.EVENTS) {
-      return;
-    }
     String message = String.format(format, args);
     formatter.formatError(messageStream(OutputType.ERROR), exception, message, options);
   }
@@ -120,9 +114,6 @@ public record DefaultOutputContext(
 
     @Override
     public void render() {
-      if (options.emitMode() == EmitMode.EVENTS) {
-        return;
-      }
       formatter.formatRegisterTable(stdout, registers, startAddress, timestamp, options);
     }
   }
@@ -159,9 +150,6 @@ public record DefaultOutputContext(
 
     @Override
     public void render() {
-      if (options.emitMode() == EmitMode.EVENTS) {
-        return;
-      }
       formatter.formatCoilTable(stdout, coilBytes, startAddress, quantity, timestamp, options);
     }
   }
@@ -177,9 +165,6 @@ public record DefaultOutputContext(
 
     @Override
     public void render() {
-      if (options.emitMode() == EmitMode.EVENTS) {
-        return;
-      }
       formatter.formatScanResults(stdout, results, options);
     }
   }

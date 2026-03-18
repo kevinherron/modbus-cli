@@ -3,12 +3,12 @@ package com.kevinherron.modbus.cli.output;
 /** Controls which kinds of records are emitted in the output stream. */
 public enum EmitMode {
 
-  /** Emit everything: events, results, and errors. */
+  /** Emit everything: results, protocol, log, and errors. */
   ALL,
 
-  /** Emit only the final business result (and errors). */
-  RESULT,
+  /** Emit results, protocol, and errors (no log messages). Default for JSON output. */
+  DATA,
 
-  /** Emit only protocol and lifecycle events. */
-  EVENTS
+  /** Emit only the final business result (and errors). */
+  RESULT
 }

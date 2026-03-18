@@ -29,7 +29,7 @@ modbus --json client localhost write-multiple-registers 0 3 100,200,300
 
 ```json lines
 {
-  "kind": "event",
+  "kind": "log",
   "command": "client.write-multiple-registers",
   "invocation": {
     "id": "e452744c-...",
@@ -37,12 +37,12 @@ modbus --json client localhost write-multiple-registers 0 3 100,200,300
   },
   "timestamp": "2026-03-11T20:51:09.906125Z",
   "data": {
-    "type": "info",
+    "level": "info",
     "message": "Hostname: localhost:502, Unit ID: 1"
   }
 }
 {
-  "kind": "event",
+  "kind": "protocol",
   "command": "client.write-multiple-registers",
   "invocation": {
     "id": "e452744c-...",
@@ -50,14 +50,14 @@ modbus --json client localhost write-multiple-registers 0 3 100,200,300
   },
   "timestamp": "2026-03-11T20:51:09.911380Z",
   "data": {
-    "type": "protocol",
+
     "direction": "sent",
     "function_code": 16,
     "pdu": "100000000306006400c8012c"
   }
 }
 {
-  "kind": "event",
+  "kind": "protocol",
   "command": "client.write-multiple-registers",
   "invocation": {
     "id": "e452744c-...",
@@ -65,7 +65,7 @@ modbus --json client localhost write-multiple-registers 0 3 100,200,300
   },
   "timestamp": "2026-03-11T20:51:09.953174Z",
   "data": {
-    "type": "protocol",
+
     "direction": "received",
     "function_code": 16,
     "pdu": "1000000003"

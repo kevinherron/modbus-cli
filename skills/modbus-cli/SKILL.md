@@ -29,7 +29,7 @@ events confirming success.
 | Option                       | Description                       | Default |
 |------------------------------|-----------------------------------|---------|
 | `--json`                     | Output JSON instead of human text | false   |
-| `--emit all\|result\|events` | Output filtering                  | `all`   |
+| `--emit all\|data\|result`   | Output filtering                  | `data` (with `--json`) |
 | `-v, --verbose`              | Verbose output, full stack traces | false   |
 | `--no-color`                 | Disable ANSI colors               | false   |
 
@@ -113,13 +113,13 @@ envelope with the following fields:
 
 | Field                  | Description                                                                             |
 |------------------------|-----------------------------------------------------------------------------------------|
-| `kind`                 | `"event"` (info or protocol), `"result"` (final command output), or `"error"`           |
+| `kind`                 | `"result"` (final output), `"protocol"` (PDU sent/received), `"log"` (info/warnings), or `"error"` |
 | `command`              | Command that produced this line, e.g. `"client.read-holding-registers"`                 |
 | `invocation.id`        | UUID shared by all lines from the same invocation                                       |
 | `invocation.sequence`  | Monotonically increasing counter within the invocation                                  |
 | `invocation.iteration` | Present only when polling with `-c`; the 1-based poll iteration                         |
 | `timestamp`            | ISO-8601 UTC timestamp                                                                  |
-| `data`                 | Payload for `"event"` and `"result"` kinds — shape depends on command (see below)       |
+| `data`                 | Payload for `"result"`, `"protocol"`, and `"log"` kinds — shape depends on command (see below) |
 | `error`                | Payload for `"error"` kind — contains `code`, `category`, `message`, and opt. `details` |
 
 Result example — reading 5 holding registers with `--json --emit result`:
@@ -134,7 +134,6 @@ Result example — reading 5 holding registers with `--json --emit result`:
   },
   "timestamp": "2026-03-11T20:51:02.069600Z",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 5,
     "bytes": "00000001000200030004",
@@ -170,23 +169,25 @@ Error example — connection refused:
 
 #### Emit Modes
 
-| Mode     | Behavior                                               |
-|----------|--------------------------------------------------------|
-| `all`    | Events + results (default)                             |
-| `result` | Results only (no protocol PDUs). No output for writes. |
-| `events` | Protocol events only (no result tables)                |
+| Mode     | Behavior                                                          |
+|----------|-------------------------------------------------------------------|
+| `all`    | Results + protocol + log + errors                                 |
+| `data`   | Results + protocol + errors (no log). Default with `--json`.      |
+| `result` | Results + errors only (no protocol PDUs). No output for writes.   |
 
-#### Result Data Types
+#### Result Data
 
-| `data.type`      | Returned by               | Key fields                                                              |
-|------------------|---------------------------|-------------------------------------------------------------------------|
-| `register_table` | Register read commands    | `start_address`, `quantity`, `bytes`, `registers`                       |
-| `coil_table`     | Coil/discrete input reads | `start_address`, `quantity`, `bytes`, `coils`                           |
-| `scan_results`   | `scan`                    | `windows[]` each with `start_address`, `quantity`, `bytes`, `registers` |
+Results are distinguishable by their fields — no `data.type` sub-field:
 
-**Write commands** emit only protocol events (no result object). Using `--emit result` with a
+| Returned by               | Key fields                                                              |
+|---------------------------|-------------------------------------------------------------------------|
+| Register read commands    | `start_address`, `quantity`, `bytes`, `registers`                       |
+| Coil/discrete input reads | `start_address`, `quantity`, `bytes`, `coils`                           |
+| `scan`                    | `windows[]` each with `start_address`, `quantity`, `bytes`, `registers` |
+
+**Write commands** emit only protocol records (no result object). Using `--emit result` with a
 write command produces no output. See individual [command docs](client/commands/) for full
-event and result examples.
+protocol and result examples.
 
 ---
 

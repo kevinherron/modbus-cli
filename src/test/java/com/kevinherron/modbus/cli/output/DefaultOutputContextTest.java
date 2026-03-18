@@ -14,10 +14,11 @@ class DefaultOutputContextTest {
   void jsonWarningsAndErrorsUseStdout() {
     var stdoutCapture = new ByteArrayOutputStream();
     var stderrCapture = new ByteArrayOutputStream();
+    var options = new OutputOptions(true, false, false, EmitMode.ALL);
     var output =
         new DefaultOutputContext(
             new JsonFormatter(),
-            OutputOptions.jsonDefaults(),
+            options,
             new PrintStream(stdoutCapture, true, StandardCharsets.UTF_8),
             new PrintStream(stderrCapture, true, StandardCharsets.UTF_8));
 
@@ -27,7 +28,7 @@ class DefaultOutputContextTest {
     String stdout = stdoutCapture.toString(StandardCharsets.UTF_8);
     String stderr = stderrCapture.toString(StandardCharsets.UTF_8);
 
-    assertTrue(stdout.contains("\"kind\":\"event\""));
+    assertTrue(stdout.contains("\"kind\":\"log\""));
     assertTrue(stdout.contains("\"message\":\"warning message\""));
     assertTrue(stdout.contains("\"kind\":\"error\""));
     assertTrue(stdout.contains("\"message\":\"error message\""));

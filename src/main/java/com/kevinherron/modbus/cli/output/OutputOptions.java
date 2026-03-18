@@ -23,6 +23,6 @@ public record OutputOptions(
 
   /** Creates options for JSON output. */
   public static OutputOptions jsonDefaults() {
-    return new OutputOptions(true, false, false, EmitMode.ALL);
+    return new OutputOptions(true, false, false, EmitMode.DATA);
   }
 }

@@ -39,15 +39,22 @@ public class ModbusCommand {
 
   @Option(
       names = {"--emit"},
-      description = "control output: all, result, events (default: all)",
+      description =
+          "control JSON output: all, data, result (default: data). Only applies with --json.",
       converter = EmitModeConverter.class)
-  EmitMode emitMode = EmitMode.ALL;
+  @SuppressWarnings("NullAway")
+  EmitMode emitMode = null;
 
   /** Creates an OutputContext based on the command-line options. */
   public OutputContext createOutputContext() {
     OutputFormatter formatter = json ? new JsonFormatter() : new HumanFormatter();
 
-    var options = new OutputOptions(json, verbose, !noColor, emitMode);
+    EmitMode effectiveEmitMode = emitMode;
+    if (effectiveEmitMode == null) {
+      effectiveEmitMode = json ? EmitMode.DATA : EmitMode.ALL;
+    }
+
+    var options = new OutputOptions(json, verbose, !noColor, effectiveEmitMode);
 
     return new DefaultOutputContext(formatter, options);
   }

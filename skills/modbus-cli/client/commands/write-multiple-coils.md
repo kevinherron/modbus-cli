@@ -31,7 +31,7 @@ modbus --json client localhost write-multiple-coils 0 4 true,false,true,false
 
 ```json lines
 {
-  "kind": "event",
+  "kind": "log",
   "command": "client.write-multiple-coils",
   "invocation": {
     "id": "5a3255d2-...",
@@ -39,12 +39,12 @@ modbus --json client localhost write-multiple-coils 0 4 true,false,true,false
   },
   "timestamp": "2026-03-11T20:51:03.223305Z",
   "data": {
-    "type": "info",
+    "level": "info",
     "message": "Hostname: localhost:502, Unit ID: 1"
   }
 }
 {
-  "kind": "event",
+  "kind": "protocol",
   "command": "client.write-multiple-coils",
   "invocation": {
     "id": "5a3255d2-...",
@@ -52,14 +52,14 @@ modbus --json client localhost write-multiple-coils 0 4 true,false,true,false
   },
   "timestamp": "2026-03-11T20:51:03.227992Z",
   "data": {
-    "type": "protocol",
+
     "direction": "sent",
     "function_code": 15,
     "pdu": "0f000000040105"
   }
 }
 {
-  "kind": "event",
+  "kind": "protocol",
   "command": "client.write-multiple-coils",
   "invocation": {
     "id": "5a3255d2-...",
@@ -67,7 +67,7 @@ modbus --json client localhost write-multiple-coils 0 4 true,false,true,false
   },
   "timestamp": "2026-03-11T20:51:03.230701Z",
   "data": {
-    "type": "protocol",
+
     "direction": "received",
     "function_code": 15,
     "pdu": "0f00000004"

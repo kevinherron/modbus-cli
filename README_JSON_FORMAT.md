@@ -16,7 +16,7 @@ envelope structure:
 
 ```json
 {
-  "kind": "result | event | error",
+  "kind": "result | protocol | log | error",
   "command": "client.read-holding-registers",
   "invocation": {
     "id": "UUID",
@@ -33,32 +33,34 @@ envelope structure:
 
 | Field              | Type   | Description                                                           |
 |--------------------|--------|-----------------------------------------------------------------------|
-| `kind`             | string | Record type: `"result"`, `"event"`, or `"error"`.                     |
+| `kind`             | string | Record type: `"result"`, `"protocol"`, `"log"`, or `"error"`.        |
 | `command`          | string | The command that produced this record (e.g., `"client.read-holding-registers"`). |
 | `invocation.id`    | string | UUID unique to this CLI invocation.                                   |
 | `invocation.sequence` | int | Monotonically increasing sequence number within this invocation.      |
 | `invocation.iteration` | int | Present when polling with `-c`; the current iteration number.        |
 | `timestamp`        | string | ISO 8601 timestamp (e.g., `"2025-11-02T23:07:57.618695Z"`).          |
-| `data`             | object | The payload for `"result"` and `"event"` records. Absent on errors.   |
+| `data`             | object | The payload for `"result"`, `"protocol"`, and `"log"` records. Absent on errors. |
 | `error`            | object | The error payload for `"error"` records. Absent on non-errors.        |
 
 ### Record Kinds
 
 - **`result`**: Final business data (register tables, coil tables, scan results).
-- **`event`**: Protocol and lifecycle events (info messages, PDU sent/received).
+- **`protocol`**: Modbus PDU sent/received events.
+- **`log`**: Info, success, and warning messages.
 - **`error`**: Structured error objects (see below).
 
 ## Output Shaping (`--emit`)
 
 The `--emit` option controls which record kinds are emitted:
 
-| Value              | Emits                                    |
-|--------------------|------------------------------------------|
-| `--emit=all`       | Everything: events, results, and errors. |
-| `--emit=result`    | Only results and errors.                 |
-| `--emit=events`    | Only events.                             |
+| Value              | Emits                                             |
+|--------------------|---------------------------------------------------|
+| `--emit=all`       | Everything: results, protocol, log, and errors.   |
+| `--emit=data`      | Results, protocol, and errors (no log messages).  |
+| `--emit=result`    | Only results and errors.                          |
 
-Default is `all`. The `--quiet` flag suppresses info events and protocol events.
+Default is `data` when `--json` is active, `all` for human output. Use `--emit=all` to include
+log messages (connection info, success, warnings).
 
 ## Structured Error Objects
 
@@ -136,7 +138,6 @@ Output from register read operations (holding registers, input registers).
   "invocation": { "id": "...", "sequence": 3 },
   "timestamp": "...",
   "data": {
-    "type": "register_table",
     "start_address": 0,
     "quantity": 5,
     "bytes": "00000001000200030004",
@@ -147,7 +148,6 @@ Output from register read operations (holding registers, input registers).
 
 **Data fields:**
 
-- `type`: Always `"register_table"`
 - `start_address`: Starting register address
 - `quantity`: Number of registers read
 - `bytes`: Hex-encoded raw register bytes (2 bytes per register, big-endian)
@@ -166,7 +166,6 @@ Output from coil/discrete input read operations.
   "invocation": { "id": "...", "sequence": 3 },
   "timestamp": "...",
   "data": {
-    "type": "coil_table",
     "start_address": 0,
     "quantity": 8,
     "bytes": "05",
@@ -177,7 +176,6 @@ Output from coil/discrete input read operations.
 
 **Data fields:**
 
-- `type`: Always `"coil_table"`
 - `start_address`: Starting coil/discrete input address
 - `quantity`: Number of coils/discrete inputs
 - `bytes`: Hex-encoded raw coil bytes as received on the wire
@@ -196,7 +194,6 @@ Output from scan operations that read multiple register windows.
   "invocation": { "id": "...", "sequence": 5 },
   "timestamp": "...",
   "data": {
-    "type": "scan_results",
     "windows": [
       {
         "start_address": 0,
@@ -217,25 +214,23 @@ Output from scan operations that read multiple register windows.
 
 **Data fields:**
 
-- `type`: Always `"scan_results"`
 - `windows`: Array of scan window objects, one per sliding window read
     - `start_address`: Starting register address of this window
     - `quantity`: Number of registers in this window
     - `bytes`: Hex-encoded raw register bytes (2 bytes per register, big-endian)
     - `registers`: Array of unsigned 16-bit register values (0-65535)
 
-### Protocol Events
+### Protocol Records
 
 Modbus request and response messages with raw PDU bytes.
 
 ```json
 {
-  "kind": "event",
+  "kind": "protocol",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },
   "timestamp": "...",
   "data": {
-    "type": "protocol",
     "direction": "sent",
     "function_code": 3,
     "pdu": "030000000A"
@@ -245,7 +240,6 @@ Modbus request and response messages with raw PDU bytes.
 
 **Data fields:**
 
-- `type`: Always `"protocol"`
 - `direction`: Either `"sent"` or `"received"`
 - `function_code`: Integer Modbus function code (1-127)
 - `pdu`: Hex-encoded PDU bytes (uppercase, no spaces or separators)
@@ -265,35 +259,40 @@ Modbus request and response messages with raw PDU bytes.
 | 22   | Mask Write Register          |
 | 23   | Read/Write Multiple Registers|
 
-### Info Events
+### Log Records
 
 Connection and status information.
 
 ```json
 {
-  "kind": "event",
+  "kind": "log",
   "command": "client.read-holding-registers",
   "invocation": { "id": "...", "sequence": 1 },
   "timestamp": "...",
   "data": {
-    "type": "info",
+    "level": "info",
     "message": "Hostname: localhost:502, Unit ID: 1"
   }
 }
 ```
 
+**Data fields:**
+
+- `level`: `"info"`, `"success"`, or `"warning"`
+- `message`: Human-readable message text
+
 ## Command Output Reference
 
 ### Read Commands
 
-| Command                          | Alias  | Data Output      |
-|----------------------------------|--------|------------------|
-| `read-coils`                     | `rc`   | `coil_table`     |
-| `read-discrete-inputs`          | `rdi`  | `coil_table`     |
-| `read-holding-registers`        | `rhr`  | `register_table` |
-| `read-input-registers`          | `rir`  | `register_table` |
-| `read-write-multiple-registers` | `rwmr` | `register_table` |
-| `scan`                           |        | `scan_results`   |
+| Command                          | Alias  | Result Data                    |
+|----------------------------------|--------|--------------------------------|
+| `read-coils`                     | `rc`   | `coils` array                  |
+| `read-discrete-inputs`          | `rdi`  | `coils` array                  |
+| `read-holding-registers`        | `rhr`  | `registers` array              |
+| `read-input-registers`          | `rir`  | `registers` array              |
+| `read-write-multiple-registers` | `rwmr` | `registers` array              |
+| `scan`                           |        | `windows` array                |
 
 ### Write Commands
 
