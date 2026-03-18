@@ -198,13 +198,13 @@ Output from scan operations that read multiple register windows.
       {
         "start_address": 0,
         "quantity": 10,
-        "bytes": "00000001000200030004000500060007000800090",
+        "bytes": "0000000100020003000400050006000700080009",
         "registers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
       },
       {
         "start_address": 10,
         "quantity": 10,
-        "bytes": "000a000b000c000d000e000f00100011001200130",
+        "bytes": "000a000b000c000d000e000f0010001100120013",
         "registers": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
       }
     ]
