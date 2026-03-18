@@ -77,8 +77,8 @@ public interface OutputContext {
    * details. In human mode, this behaves identically to {@link #error(String, Object...)}.
    *
    * @param exception the exception that caused the error.
-   * @param format the format string. for the human-readable message.
-   * @param args format arguments..
+   * @param format the format string for the human-readable message.
+   * @param args format arguments.
    */
   void error(Exception exception, String format, Object... args);
 
