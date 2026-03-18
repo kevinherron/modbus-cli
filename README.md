@@ -243,7 +243,6 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 - `--json` - Use JSON output format (default: human-readable)
 - `--emit <mode>` - Control JSON output volume: `all`, `data` (default with `--json`), `result`
 - `-v, --verbose` - Verbose mode - detailed output
-- `-q, --quiet` - Quiet mode - minimal output
 - `--no-color` - Disable ANSI color output
 
 **Client Options:**
