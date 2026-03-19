@@ -33,6 +33,20 @@ events confirming success.
 | `-v, --verbose`              | Verbose output, full stack traces | false   |
 | `--no-color`                 | Disable ANSI colors               | false   |
 
+## Exit Codes
+
+Use CLI exit codes for automation:
+
+| Code | Meaning |
+|------|---------|
+| `0`  | Success |
+| `1`  | General Modbus failure fallback |
+| `2`  | CLI usage or invalid argument error |
+| `3`  | Connection or serial-port setup failure |
+| `4`  | Modbus protocol failure (exception response, CRC error) |
+| `5`  | Timeout or interrupted operation |
+| `10` | Unexpected internal error |
+
 ## Endpoint Formats
 
 TCP (all equivalent):
