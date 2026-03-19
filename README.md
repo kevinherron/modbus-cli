@@ -378,6 +378,10 @@ The CLI uses stable, documented exit codes for automation:
 | `5`  | Timeout or interrupted     | Request timed out, operation interrupted. |
 | `10` | Internal error             | Unexpected exception, bug.                |
 
+Exit codes are derived from the exception cause chain. Specific codes (`2`-`5`) take precedence;
+otherwise the CLI falls back to `1` for generic `ModbusException` failures and `10` for other
+unexpected errors.
+
 ## Agent Skill
 
 This project includes an [Agent Skill](https://agentskills.io/home) that lets AI coding agents

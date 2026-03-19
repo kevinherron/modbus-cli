@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.digitalpetri.modbus.exceptions.ModbusCrcException;
+import com.digitalpetri.modbus.exceptions.ModbusException;
+import com.digitalpetri.modbus.exceptions.ModbusResponseException;
+import com.digitalpetri.modbus.exceptions.ModbusTimeoutException;
 import com.fazecast.jSerialComm.SerialPortIOException;
 import com.fazecast.jSerialComm.SerialPortInvalidPortException;
 import com.fazecast.jSerialComm.SerialPortTimeoutException;
@@ -46,6 +50,34 @@ class ExitCodeTest {
   @Test
   void serialPortTimeoutReturnsTimeoutExitCode() {
     assertEquals(5, Modbus.mapExitCode(new SerialPortTimeoutException("fake")));
+  }
+
+  @Test
+  void genericModbusExceptionReturnsFallbackFailureExitCode() {
+    assertEquals(1, Modbus.mapExitCode(new ModbusException("fake")));
+  }
+
+  @Test
+  void modbusResponseExceptionReturnsProtocolFailureExitCode() {
+    assertEquals(4, Modbus.mapExitCode(new ModbusResponseException(3, 2)));
+  }
+
+  @Test
+  void modbusCrcExceptionReturnsProtocolFailureExitCode() {
+    assertEquals(4, Modbus.mapExitCode(new ModbusCrcException(null)));
+  }
+
+  @Test
+  void wrappedTimeoutReturnsSpecificTimeoutExitCode() {
+    var exception =
+        new RuntimeException(new ModbusException("outer", new ModbusTimeoutException("fake")));
+
+    assertEquals(5, Modbus.mapExitCode(exception));
+  }
+
+  @Test
+  void unexpectedExceptionReturnsInternalErrorExitCode() {
+    assertEquals(10, Modbus.mapExitCode(new RuntimeException("fake")));
   }
 
   @Test
