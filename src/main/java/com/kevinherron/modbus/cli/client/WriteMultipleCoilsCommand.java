@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteMultipleCoilsRequest;
 import com.digitalpetri.modbus.pdu.WriteMultipleCoilsResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -17,8 +18,8 @@ import picocli.CommandLine.ParentCommand;
  * <p>This command writes multiple coils (discrete outputs) in a single transaction. Coils are
  * read/write boolean values typically representing physical outputs like relays or actuators.
  *
- * <p>This command is invoked using {@code wmc} (e.g., {@code modbus client wmc 0 4
- * true,false,1,0}).
+ * <p>This command is invoked using {@code write-multiple-coils} (e.g., {@code modbus client
+ * write-multiple-coils 0 4 true,false,1,0}).
  *
  * <p>Coil values are packed into bytes using LSB-first bit ordering per the Modbus protocol. The
  * byte count is calculated as {@code (quantity + 7) / 8}, and each coil value is set as a bit
@@ -27,7 +28,16 @@ import picocli.CommandLine.ParentCommand;
  * @see WriteSingleCoilCommand for writing a single coil (function code 05)
  * @see ReadCoilsCommand for reading coil values (function code 01)
  */
-@Command(name = "wmc", description = "Write Multiple Coils")
+@Command(
+    name = "write-multiple-coils",
+    aliases = "wmc",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 15 (Write Multiple Coils).",
+      "Mutating and idempotent when repeated with the same values.",
+      "Example: modbus client <endpoint> write-multiple-coils 0 4 true,false,1,0"
+    })
 class WriteMultipleCoilsCommand implements Runnable {
 
   /** The starting address for writing coils. Addressing is typically 0-based. */
@@ -52,6 +62,7 @@ class WriteMultipleCoilsCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "write-multiple-coils",
         (ModbusClient client, int unitId, OutputContext output) -> {
           String[] valueStrings = values.split(",");
           if (valueStrings.length != quantity) {

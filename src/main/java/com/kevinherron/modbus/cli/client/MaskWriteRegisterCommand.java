@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.MaskWriteRegisterRequest;
 import com.digitalpetri.modbus.pdu.MaskWriteRegisterResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -30,12 +31,22 @@ import picocli.CommandLine.ParentCommand;
  *   <li>Toggling specific bits: combine `AND` and `OR` masks appropriately
  * </ul>
  *
- * <p>This command is invoked using {@code mwr} (e.g., {@code modbus client mwr 0 0xFF00 0x00FF}).
+ * <p>This command is invoked using {@code mask-write-register} (e.g., {@code modbus client
+ * mask-write-register 0 0xFF00 0x00FF}).
  *
  * @see WriteSingleRegisterCommand for writing an entire register value (function code 06)
  * @see WriteMultipleRegistersCommand for writing multiple registers (function code 16)
  */
-@Command(name = "mwr", description = "Mask Write Register")
+@Command(
+    name = "mask-write-register",
+    aliases = "mwr",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 22 (Mask Write Register).",
+      "Mutating and idempotent when repeated with the same masks.",
+      "Example: modbus client <endpoint> mask-write-register 0 0xFF00 0x00FF"
+    })
 class MaskWriteRegisterCommand implements Runnable {
 
   /** The address of the register to modify. Addressing is typically 0-based. */
@@ -65,6 +76,7 @@ class MaskWriteRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "mask-write-register",
         (ModbusClient client, int unitId, OutputContext output) -> {
           int andMaskValue = ValueParser.parseHexValue(andMask);
           int orMaskValue = ValueParser.parseHexValue(orMask);

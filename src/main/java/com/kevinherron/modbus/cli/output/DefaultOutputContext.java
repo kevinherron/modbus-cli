@@ -22,32 +22,56 @@ public record DefaultOutputContext(
   }
 
   @Override
+  public void setCommand(String command) {
+    formatter.setCommand(command);
+  }
+
+  @Override
   public void protocol(ModbusPdu pdu, Direction direction, @Nullable Instant timestamp) {
+    if (options.emitMode() == EmitMode.RESULT) {
+      return;
+    }
     formatter.formatProtocol(stdout, pdu, direction, timestamp, options);
   }
 
   @Override
   public void info(String format, Object... args) {
+    if (options.emitMode() != EmitMode.ALL) {
+      return;
+    }
     String message = String.format(format, args);
     formatter.formatMessage(stdout, OutputType.INFO, message, options);
   }
 
   @Override
   public void success(String format, Object... args) {
+    if (options.emitMode() != EmitMode.ALL) {
+      return;
+    }
     String message = String.format(format, args);
     formatter.formatMessage(stdout, OutputType.SUCCESS, message, options);
   }
 
   @Override
   public void warning(String format, Object... args) {
+    if (options.emitMode() != EmitMode.ALL) {
+      return;
+    }
     String message = String.format(format, args);
-    formatter.formatMessage(stderr, OutputType.WARNING, message, options);
+    formatter.formatMessage(
+        messageStream(OutputType.WARNING), OutputType.WARNING, message, options);
   }
 
   @Override
   public void error(String format, Object... args) {
     String message = String.format(format, args);
-    formatter.formatMessage(stderr, OutputType.ERROR, message, options);
+    formatter.formatMessage(messageStream(OutputType.ERROR), OutputType.ERROR, message, options);
+  }
+
+  @Override
+  public void error(Exception exception, String format, Object... args) {
+    String message = String.format(format, args);
+    formatter.formatError(messageStream(OutputType.ERROR), exception, message, options);
   }
 
   @Override
@@ -143,5 +167,16 @@ public record DefaultOutputContext(
     public void render() {
       formatter.formatScanResults(stdout, results, options);
     }
+  }
+
+  private PrintStream messageStream(OutputType type) {
+    if (options.json() && (type == OutputType.WARNING || type == OutputType.ERROR)) {
+      return stdout;
+    }
+
+    return switch (type) {
+      case WARNING, ERROR -> stderr;
+      default -> stdout;
+    };
   }
 }

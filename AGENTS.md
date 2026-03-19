@@ -35,11 +35,18 @@ mvn -q test -Dtest=ValueParserTest            # Run a single test class
 mvn -q test -Dtest=*IT                        # Run integration tests
 ```
 
+## Dependency Source Code
+
+To examine dependency source code, check the `external/src` directory at the project root. This
+directory contains unpacked source files from all dependencies, organized by package structure for
+easy browsing and searching.
+
+See `.agents/docs/dependencies.md` if this directory does not exist or content is missing.
+
 ## Additional Resources
 
-- Java coding conventions: `.agents/docs/java-coding-conventions.md`
+- Coding conventions: `.agents/docs/java-coding-conventions.md`
 - Testing guidelines: `.agents/docs/testing.md`
-- Dependencies: `.agents/docs/dependencies.md`
 
 ## Verification
 

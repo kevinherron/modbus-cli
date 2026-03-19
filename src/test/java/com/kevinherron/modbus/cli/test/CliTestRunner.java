@@ -1,5 +1,6 @@
 package com.kevinherron.modbus.cli.test;
 
+import com.kevinherron.modbus.cli.Modbus;
 import com.kevinherron.modbus.cli.ModbusCommand;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -60,6 +61,7 @@ public class CliTestRunner {
   public static Result execute(ModbusCommand command, String... args) {
     var stdoutCapture = new ByteArrayOutputStream();
     var stderrCapture = new ByteArrayOutputStream();
+    CommandLine cmd;
 
     var originalStdout = System.out;
     var originalStderr = System.err;
@@ -70,7 +72,7 @@ public class CliTestRunner {
       System.setOut(new PrintStream(stdoutCapture, true, StandardCharsets.UTF_8));
       System.setErr(new PrintStream(stderrCapture, true, StandardCharsets.UTF_8));
 
-      var cmd = new CommandLine(command);
+      cmd = Modbus.createCommandLine(command);
       exitCode = cmd.execute(args);
     } finally {
       System.setOut(originalStdout);
@@ -82,7 +84,7 @@ public class CliTestRunner {
         stdoutCapture.toString(StandardCharsets.UTF_8),
         stderrCapture.toString(StandardCharsets.UTF_8),
         command,
-        null);
+        cmd);
   }
 
   /**

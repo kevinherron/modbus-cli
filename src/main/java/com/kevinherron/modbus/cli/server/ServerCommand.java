@@ -7,6 +7,8 @@ import com.digitalpetri.modbus.server.ProcessImage;
 import com.digitalpetri.modbus.server.ReadWriteModbusServices;
 import com.digitalpetri.modbus.tcp.server.NettyTcpServerTransport;
 import com.kevinherron.modbus.cli.ModbusCommand;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
+import com.kevinherron.modbus.cli.ReportedCliException;
 import com.kevinherron.modbus.cli.SerialPortOptions;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.EndpointParser;
@@ -23,7 +25,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
-@Command(name = "server")
+@Command(
+    name = "server",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class)
 public class ServerCommand implements Runnable {
 
   @ParentCommand ModbusCommand parent;
@@ -55,8 +60,7 @@ public class ServerCommand implements Runnable {
     try {
       resolvedEndpoint = EndpointParser.parse(endpoint, port);
     } catch (Exception e) {
-      handleException(e, output);
-      return;
+      throw handleException(e, output);
     }
 
     var services = createServices();
@@ -67,7 +71,7 @@ public class ServerCommand implements Runnable {
         case Endpoint.Rtu rtu -> runRtuServer(rtu, services, output);
       }
     } catch (ExecutionException | InterruptedException e) {
-      handleException(e, output);
+      throw handleException(e, output);
     }
   }
 
@@ -77,10 +81,7 @@ public class ServerCommand implements Runnable {
 
     NettyTcpServerTransport transport =
         NettyTcpServerTransport.create(
-            cfg -> {
-              cfg.bindAddress = tcp.hostname();
-              cfg.port = tcp.port();
-            });
+            cfg -> cfg.setBindAddress(tcp.hostname()).setPort(tcp.port()));
 
     var server = ModbusTcpServer.create(transport, services);
     server.start();
@@ -101,14 +102,14 @@ public class ServerCommand implements Runnable {
     var transport =
         SerialPortServerTransport.create(
             cfg -> {
-              cfg.serialPort = rtu.serialPort();
-              cfg.baudRate = serialOptions.baudRate;
-              cfg.dataBits = resolvedDataBits;
-              cfg.stopBits = resolvedStopBits;
-              cfg.parity = resolvedParity;
-            });
+              cfg.setSerialPort(rtu.serialPort())
+                  .setBaudRate(serialOptions.baudRate)
+                  .setDataBits(resolvedDataBits)
+                  .setStopBits(resolvedStopBits)
+                  .setParity(resolvedParity);
 
-    serialOptions.configureRs485(transport.getSerialPort());
+              serialOptions.configureRs485(cfg);
+            });
 
     var server = ModbusRtuServer.create(transport, services);
     server.start();
@@ -135,14 +136,16 @@ public class ServerCommand implements Runnable {
     };
   }
 
-  private void handleException(Exception e, OutputContext output) {
+  private ReportedCliException handleException(Exception e, OutputContext output) {
     if (parent.verbose) {
       var sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
-      output.error("%s", sw.toString());
+      output.error(e, "%s", sw.toString());
     } else {
-      output.error("%s", e.getMessage());
+      output.error(e, "%s", e.getMessage());
     }
+
+    return new ReportedCliException(e);
   }
 
   private static ProcessImage createProcessImage() {

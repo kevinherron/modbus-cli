@@ -13,23 +13,31 @@ import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 /** Formats output as JSON for machine parsing. */
 public class JsonFormatter implements OutputFormatter {
 
-  private Integer currentIteration = null;
+  private final String invocationId = UUID.randomUUID().toString();
+  private final AtomicInteger sequence = new AtomicInteger(0);
+
+  private @Nullable String command = null;
+  private @Nullable Integer currentIteration = null;
 
   @Override
   public void setIteration(Integer iteration) {
     this.currentIteration = iteration;
+  }
+
+  @Override
+  public void setCommand(@Nullable String command) {
+    this.command = command;
   }
 
   @Override
@@ -40,27 +48,19 @@ public class JsonFormatter implements OutputFormatter {
       @Nullable Instant timestamp,
       OutputOptions options) {
 
-    if (options.quiet()) {
-      return;
-    }
-
     // Encode PDU to hex bytes
     String pduHex = encodePduToHex(pdu);
     int functionCode = pdu.getFunctionCode();
 
-    Map<String, Object> json = new LinkedHashMap<>();
-    json.put("timestamp", (timestamp != null ? timestamp : Instant.now()).toString());
-    if (currentIteration != null) {
-      json.put("iteration", currentIteration);
-    }
-    json.put("type", "protocol");
-    json.put("direction", direction.name().toLowerCase());
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("direction", direction.name().toLowerCase());
     if (functionCode != -1) {
-      json.put("function_code", functionCode);
+      data.put("function_code", functionCode);
     }
-    json.put("pdu", pduHex);
+    data.put("pdu", pduHex);
 
-    out.println(toJson(json));
+    Instant ts = timestamp != null ? timestamp : Instant.now();
+    out.println(toJson(buildEnvelope("protocol", ts, data, null)));
   }
 
   private String encodePduToHex(ModbusPdu pdu) {
@@ -89,18 +89,39 @@ public class JsonFormatter implements OutputFormatter {
   public void formatMessage(
       PrintStream out, OutputType type, String message, OutputOptions options) {
 
-    if (options.quiet() && type == OutputType.INFO) {
-      return;
+    Instant ts = Instant.now();
+
+    if (type == OutputType.ERROR) {
+      Map<String, Object> error = new LinkedHashMap<>();
+      error.put("code", "UNKNOWN_ERROR");
+      error.put("category", "internal");
+      error.put("message", message);
+      out.println(toJson(buildEnvelope("error", ts, null, error)));
+    } else {
+      Map<String, Object> data = new LinkedHashMap<>();
+      data.put("level", type.name().toLowerCase());
+      data.put("message", message);
+      out.println(toJson(buildEnvelope("log", ts, data, null)));
+    }
+  }
+
+  @Override
+  public void formatError(
+      PrintStream out, Exception exception, String message, OutputOptions options) {
+
+    Instant ts = Instant.now();
+
+    ErrorClassifier.ErrorInfo info = ErrorClassifier.classify(exception, message);
+
+    Map<String, Object> error = new LinkedHashMap<>();
+    error.put("code", info.code());
+    error.put("category", info.category());
+    error.put("message", info.message());
+    if (info.details() != null) {
+      error.put("details", info.details());
     }
 
-    Map<String, Object> json = new LinkedHashMap<>();
-    json.put("timestamp", Instant.now().toString());
-    if (currentIteration != null) {
-      json.put("iteration", currentIteration);
-    }
-    json.put("type", type.name().toLowerCase());
-    json.put("message", message);
-    out.println(toJson(json));
+    out.println(toJson(buildEnvelope("error", ts, null, error)));
   }
 
   @Override
@@ -111,24 +132,22 @@ public class JsonFormatter implements OutputFormatter {
       @Nullable Instant timestamp,
       OutputOptions options) {
 
-    // Convert byte array to a list of integers
-    List<Integer> bytes = new ArrayList<>();
-    for (byte b : registers) {
-      bytes.add(b & 0xFF);
-    }
-
     int quantity = registers.length / 2;
 
-    Map<String, Object> json = new LinkedHashMap<>();
-    json.put("timestamp", (timestamp != null ? timestamp : Instant.now()).toString());
-    if (currentIteration != null) {
-      json.put("iteration", currentIteration);
+    // Convert byte pairs to unsigned 16-bit register values
+    List<Integer> registerValues = new ArrayList<>();
+    for (int i = 0; i < registers.length; i += 2) {
+      registerValues.add(((registers[i] & 0xFF) << 8) | (registers[i + 1] & 0xFF));
     }
-    json.put("type", "register_table");
-    json.put("start_address", startAddress);
-    json.put("quantity", quantity);
-    json.put("data", bytes);
-    out.println(toJson(json));
+
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("start_address", startAddress);
+    data.put("quantity", quantity);
+    data.put("bytes", bytesToHex(registers));
+    data.put("registers", registerValues);
+
+    Instant ts = timestamp != null ? timestamp : Instant.now();
+    out.println(toJson(buildEnvelope("result", ts, data, null)));
   }
 
   @Override
@@ -140,23 +159,21 @@ public class JsonFormatter implements OutputFormatter {
       @Nullable Instant timestamp,
       OutputOptions options) {
     // Convert bytes to bits (LSB first per Modbus protocol)
-    List<Boolean> bits = new ArrayList<>();
+    List<Boolean> coils = new ArrayList<>();
     for (int i = 0; i < quantity; i++) {
       int byteIndex = i / 8;
       int bitIndex = i % 8;
-      bits.add((coilBytes[byteIndex] & (1 << bitIndex)) != 0);
+      coils.add((coilBytes[byteIndex] & (1 << bitIndex)) != 0);
     }
 
-    Map<String, Object> json = new LinkedHashMap<>();
-    json.put("timestamp", (timestamp != null ? timestamp : Instant.now()).toString());
-    if (currentIteration != null) {
-      json.put("iteration", currentIteration);
-    }
-    json.put("type", "coil_table");
-    json.put("start_address", startAddress);
-    json.put("quantity", quantity);
-    json.put("data", bits);
-    out.println(toJson(json));
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("start_address", startAddress);
+    data.put("quantity", quantity);
+    data.put("bytes", bytesToHex(coilBytes));
+    data.put("coils", coils);
+
+    Instant ts = timestamp != null ? timestamp : Instant.now();
+    out.println(toJson(buildEnvelope("result", ts, data, null)));
   }
 
   @Override
@@ -165,54 +182,71 @@ public class JsonFormatter implements OutputFormatter {
       return;
     }
 
-    // map of register address to one or more 2-byte register values
-    Map<Integer, List<byte[]>> scanResultMap = new HashMap<>();
+    List<Map<String, Object>> windows = new ArrayList<>();
 
     for (ScanResult result : results) {
-      int address = result.address();
       byte[] registers = result.registers();
+      int quantity = registers.length / 2;
 
+      List<Integer> registerValues = new ArrayList<>();
       for (int i = 0; i < registers.length; i += 2) {
-        int currentAddress = address + (i / 2);
-        byte[] registerValue = new byte[] {registers[i], registers[i + 1]};
-        scanResultMap.computeIfAbsent(currentAddress, _ -> new ArrayList<>()).add(registerValue);
+        registerValues.add(((registers[i] & 0xFF) << 8) | (registers[i + 1] & 0xFF));
       }
+
+      Map<String, Object> window = new LinkedHashMap<>();
+      window.put("start_address", result.address());
+      window.put("quantity", quantity);
+      window.put("bytes", bytesToHex(registers));
+      window.put("registers", registerValues);
+      windows.add(window);
     }
 
-    if (scanResultMap.isEmpty()) {
-      return;
+    Map<String, Object> data = new LinkedHashMap<>();
+    data.put("windows", windows);
+
+    Instant ts = Instant.now();
+    out.println(toJson(buildEnvelope("result", ts, data, null)));
+  }
+
+  /**
+   * Builds the common JSON envelope structure.
+   *
+   * @param kind the record kind: "result", "protocol", "log", or "error".
+   * @param timestamp the timestamp for this record.
+   * @param data the data payload, or null if not applicable.
+   * @param error the error payload, or null if not applicable.
+   * @return the envelope as an ordered map.
+   */
+  private Map<String, Object> buildEnvelope(
+      String kind,
+      Instant timestamp,
+      @Nullable Map<String, Object> data,
+      @Nullable Map<String, Object> error) {
+
+    Map<String, Object> envelope = new LinkedHashMap<>();
+    envelope.put("kind", kind);
+    if (command != null) {
+      envelope.put("command", command);
     }
 
-    // Get all unique register addresses and sort them
-    List<Integer> sortedAddresses = new ArrayList<>(scanResultMap.keySet());
-    Collections.sort(sortedAddresses);
-
-    // Build JSON structure
-    List<Map<String, Object>> resultsList = new ArrayList<>();
-    for (int address : sortedAddresses) {
-      List<byte[]> entries = scanResultMap.get(address);
-
-      // Convert byte arrays to lists of integers
-      List<List<Integer>> values =
-          entries.stream().map(bytes -> List.of(bytes[0] & 0xFF, bytes[1] & 0xFF)).toList();
-
-      boolean identical = areAllEqual(entries);
-
-      Map<String, Object> resultEntry = new LinkedHashMap<>();
-      resultEntry.put("address", address);
-      resultEntry.put("values", values);
-      resultEntry.put("identical", identical);
-      resultsList.add(resultEntry);
-    }
-
-    Map<String, Object> json = new LinkedHashMap<>();
-    json.put("timestamp", Instant.now().toString());
+    Map<String, Object> invocation = new LinkedHashMap<>();
+    invocation.put("id", invocationId);
+    invocation.put("sequence", sequence.incrementAndGet());
     if (currentIteration != null) {
-      json.put("iteration", currentIteration);
+      invocation.put("iteration", currentIteration);
     }
-    json.put("type", "scan_results");
-    json.put("results", resultsList);
-    out.println(toJson(json));
+    envelope.put("invocation", invocation);
+
+    envelope.put("timestamp", timestamp.toString());
+
+    if (data != null) {
+      envelope.put("data", data);
+    }
+    if (error != null) {
+      envelope.put("error", error);
+    }
+
+    return envelope;
   }
 
   /**
@@ -228,7 +262,7 @@ public class JsonFormatter implements OutputFormatter {
       return obj.toString();
     } else if (obj instanceof Map<?, ?> map) {
       return map.entrySet().stream()
-          .map(e -> "\"" + e.getKey() + "\":" + toJson(e.getValue()))
+          .map(e -> "\"" + escapeJson(String.valueOf(e.getKey())) + "\":" + toJson(e.getValue()))
           .collect(Collectors.joining(",", "{", "}"));
     } else if (obj instanceof List<?> list) {
       return list.stream().map(this::toJson).collect(Collectors.joining(",", "[", "]"));
@@ -238,25 +272,28 @@ public class JsonFormatter implements OutputFormatter {
   }
 
   private String escapeJson(String s) {
-    return s.replace("\\", "\\\\")
-        .replace("\"", "\\\"")
-        .replace("\n", "\\n")
-        .replace("\r", "\\r")
-        .replace("\t", "\\t");
-  }
-
-  private static boolean areAllEqual(List<byte[]> list) {
-    if (list == null || list.size() <= 1) {
-      return true;
-    }
-
-    byte[] first = list.getFirst();
-    for (int i = 1; i < list.size(); i++) {
-      if (!Arrays.equals(first, list.get(i))) {
-        return false;
+    StringBuilder sb = new StringBuilder(s.length());
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      switch (c) {
+        case '\\' -> sb.append("\\\\");
+        case '"' -> sb.append("\\\"");
+        case '\n' -> sb.append("\\n");
+        case '\r' -> sb.append("\\r");
+        case '\t' -> sb.append("\\t");
+        default -> {
+          if (c < 0x20) {
+            sb.append("\\u%04x".formatted((int) c));
+          } else {
+            sb.append(c);
+          }
+        }
       }
     }
+    return sb.toString();
+  }
 
-    return true;
+  private static String bytesToHex(byte[] bytes) {
+    return ByteBufUtil.hexDump(Unpooled.wrappedBuffer(bytes));
   }
 }

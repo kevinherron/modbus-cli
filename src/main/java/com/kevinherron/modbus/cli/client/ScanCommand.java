@@ -3,7 +3,10 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
+import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
+import java.time.Instant;
 import java.util.ArrayList;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -32,7 +35,15 @@ import picocli.CommandLine.ParentCommand;
  *
  * @see ReadHoldingRegistersCommand for reading a specific range of holding registers
  */
-@Command(name = "scan", description = "scan a range of registers using a sliding window")
+@Command(
+    name = "scan",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Uses repeated Modbus function code 03 (Read Holding Registers) requests.",
+      "Read-only and idempotent; safe to repeat without changing device state.",
+      "Example: modbus client <endpoint> scan 0 100 --size 10"
+    })
 public class ScanCommand implements Runnable {
 
   /** Starting address (inclusive) for the scan range. */
@@ -49,19 +60,20 @@ public class ScanCommand implements Runnable {
   /** Window size specifying the number of registers to read in each scan iteration. */
   @Option(
       names = "--size",
+      defaultValue = "1",
       description = "window size, i.e. number of registers to read in each window")
-  Integer size;
+  int size;
 
   /**
-   * Step size specifying how many registers to advance the window between iterations. When not
-   * specified, defaults to the window size for non-overlapping windows. Use a smaller step than
-   * size for overlapping windows.
+   * Step size specifying how many registers to advance the window between iterations. Use a smaller
+   * step than size for overlapping windows, or a larger step to skip addresses between windows.
    */
   @Option(
       names = "--step",
+      defaultValue = "1",
       description =
           "step size, i.e. number of registers to move the window forward by on each step")
-  Integer step;
+  int step;
 
   /**
    * Whether to include partial windows at the end of the range. When true (default), the final
@@ -78,18 +90,12 @@ public class ScanCommand implements Runnable {
 
   @Override
   public void run() {
-    if (size == null) {
-      size = 10;
-    }
-    if (step == null) {
-      step = size;
-    }
-
     int quantity = end - start;
 
     var results = new ArrayList<ScanResult>();
 
     clientCommand.runWithClient(
+        "scan",
         (ModbusClient client, int unitId, OutputContext output) -> {
           for (int i = start; i < start + quantity; i += step) {
             int windowSize = Math.min(size, start + quantity - i);
@@ -104,7 +110,12 @@ public class ScanCommand implements Runnable {
 
             var request = new ReadHoldingRegistersRequest(i, windowSize);
 
+            output.protocol(request, Direction.SENT, null);
+
             ReadHoldingRegistersResponse response = client.readHoldingRegisters(unitId, request);
+            Instant responseTime = Instant.now();
+
+            output.protocol(response, Direction.RECEIVED, responseTime);
 
             results.add(new ScanResult(i, response.registers()));
           }

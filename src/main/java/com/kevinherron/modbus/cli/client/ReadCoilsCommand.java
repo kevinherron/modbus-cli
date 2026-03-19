@@ -4,6 +4,7 @@ import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.exceptions.ModbusException;
 import com.digitalpetri.modbus.pdu.ReadCoilsRequest;
 import com.digitalpetri.modbus.pdu.ReadCoilsResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import java.time.Instant;
@@ -19,11 +20,21 @@ import picocli.CommandLine.ParentCommand;
  * to physical outputs like relays or actuators, or internal flags that can be both read and
  * written.
  *
- * <p>This command is invoked using {@code rc} (e.g., {@code modbus client rc 0 10}).
+ * <p>This command is invoked using {@code read-coils} (e.g., {@code modbus client read-coils 0
+ * 10}).
  *
  * @see ReadDiscreteInputsCommand for read-only discrete inputs (function code 02)
  */
-@Command(name = "rc", description = "Read Coils")
+@Command(
+    name = "read-coils",
+    aliases = "rc",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 01 (Read Coils).",
+      "Read-only and idempotent; safe to repeat without changing device state.",
+      "Example: modbus client <endpoint> read-coils 0 10"
+    })
 class ReadCoilsCommand implements Runnable {
 
   /** Starting coil address. Addressing is typically 0-based, though some devices use 1-based. */
@@ -55,10 +66,10 @@ class ReadCoilsCommand implements Runnable {
   public void run() {
     if (count == 1) {
       // Single read
-      clientCommand.runWithClient(this::executeRead);
+      clientCommand.runWithClient("read-coils", this::executeRead);
     } else {
       // Polling mode
-      clientCommand.runWithClientPolling(this::executeRead, count, interval);
+      clientCommand.runWithClientPolling("read-coils", this::executeRead, count, interval);
     }
   }
 

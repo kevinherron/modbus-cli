@@ -9,6 +9,8 @@ import com.digitalpetri.modbus.exceptions.ModbusExecutionException;
 import com.digitalpetri.modbus.serial.client.SerialPortClientTransport;
 import com.digitalpetri.modbus.tcp.client.NettyTcpClientTransport;
 import com.kevinherron.modbus.cli.ModbusCommand;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
+import com.kevinherron.modbus.cli.ReportedCliException;
 import com.kevinherron.modbus.cli.SerialPortOptions;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.EndpointParser;
@@ -30,22 +32,35 @@ import picocli.CommandLine.ParentCommand;
  * group, which includes:
  *
  * <ul>
- *   <li>{@link ReadCoilsCommand} (rc) - Read coils (function code 01)
- *   <li>{@link ReadDiscreteInputsCommand} (rdi) - Read discrete inputs (function code 02)
- *   <li>{@link ReadHoldingRegistersCommand} (rhr) - Read holding registers (function code 03)
- *   <li>{@link ReadInputRegistersCommand} (rir) - Read input registers (function code 04)
- *   <li>{@link WriteSingleCoilCommand} (wsc) - Write single coil (function code 05)
- *   <li>{@link WriteMultipleCoilsCommand} (wmc) - Write multiple coils (function code 15)
- *   <li>{@link WriteSingleRegisterCommand} (wsr) - Write single register (function code 06)
- *   <li>{@link WriteMultipleRegistersCommand} (wmr) - Write multiple registers (function code 16)
- *   <li>{@link MaskWriteRegisterCommand} (mwr) - Mask write register (function code 22)
- *   <li>{@link ReadWriteMultipleRegistersCommand} (rwmr) - Read/write multiple registers (function
- *       code 23)
+ *   <li>{@link ReadCoilsCommand} (read-coils) - Read coils (function code 01)
+ *   <li>{@link ReadDiscreteInputsCommand} (read-discrete-inputs) - Read discrete inputs (function
+ *       code 02)
+ *   <li>{@link ReadHoldingRegistersCommand} (read-holding-registers) - Read holding registers
+ *       (function code 03)
+ *   <li>{@link ReadInputRegistersCommand} (read-input-registers) - Read input registers (function
+ *       code 04)
+ *   <li>{@link WriteSingleCoilCommand} (write-single-coil) - Write single coil (function code 05)
+ *   <li>{@link WriteMultipleCoilsCommand} (write-multiple-coils) - Write multiple coils (function
+ *       code 15)
+ *   <li>{@link WriteSingleRegisterCommand} (write-single-register) - Write single register
+ *       (function code 06)
+ *   <li>{@link WriteMultipleRegistersCommand} (write-multiple-registers) - Write multiple registers
+ *       (function code 16)
+ *   <li>{@link MaskWriteRegisterCommand} (mask-write-register) - Mask write register (function code
+ *       22)
+ *   <li>{@link ReadWriteMultipleRegistersCommand} (read-write-multiple-registers) - Read/write
+ *       multiple registers (function code 23)
  *   <li>{@link ScanCommand} (scan) - Scan register ranges
  * </ul>
  */
 @Command(
     name = "client",
+    description = {
+      "Connect to a Modbus endpoint and run a client subcommand.",
+      "The required <endpoint> positional parameter must appear before the subcommand."
+    },
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
     subcommands = {
       ReadCoilsCommand.class,
       ReadDiscreteInputsCommand.class,
@@ -66,7 +81,7 @@ public class ClientCommand {
   @Parameters(
       index = "0",
       description =
-          "endpoint (hostname, tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
+          "required connection target before the subcommand (hostname, tcp:hostname[:port], tcp://hostname[:port], rtu:/dev/ttyUSB0, rtu:COM3)")
   String endpoint;
 
   @Option(
@@ -97,14 +112,10 @@ public class ClientCommand {
   public ModbusTcpClient createTcpClient(String hostname, int tcpPort) {
     var transport =
         NettyTcpClientTransport.create(
-            cfg -> {
-              cfg.hostname = hostname;
-              cfg.port = tcpPort;
-              cfg.connectPersistent = false;
-            });
+            cfg -> cfg.setHostname(hostname).setPort(tcpPort).setConnectPersistent(false));
 
     ModbusClientConfig config =
-        ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
+        ModbusClientConfig.create(cfg -> cfg.setRequestTimeout(Duration.ofMillis(timeout)));
 
     return new ModbusTcpClient(config, transport);
   }
@@ -117,17 +128,17 @@ public class ClientCommand {
     var transport =
         SerialPortClientTransport.create(
             cfg -> {
-              cfg.serialPort = serialPort;
-              cfg.baudRate = serialOptions.baudRate;
-              cfg.dataBits = resolvedDataBits;
-              cfg.stopBits = resolvedStopBits;
-              cfg.parity = resolvedParity;
+              cfg.setSerialPort(serialPort)
+                  .setBaudRate(serialOptions.baudRate)
+                  .setDataBits(resolvedDataBits)
+                  .setStopBits(resolvedStopBits)
+                  .setParity(resolvedParity);
+
+              serialOptions.configureRs485(cfg);
             });
 
-    serialOptions.configureRs485(transport.getSerialPort());
-
     ModbusClientConfig config =
-        ModbusClientConfig.create(cfg -> cfg.requestTimeout = Duration.ofMillis(timeout));
+        ModbusClientConfig.create(cfg -> cfg.setRequestTimeout(Duration.ofMillis(timeout)));
 
     return new ModbusRtuClient(config, transport);
   }
@@ -144,12 +155,12 @@ public class ClientCommand {
    *
    * <p>This method handles the full client lifecycle: connect, execute the provided command, and
    * disconnect. Any exceptions during execution are passed to {@link #handleException} for
-   * appropriate error output based on verbose/quiet mode settings.
+   * appropriate error output based on verbose mode settings.
    *
    * @param command the Modbus operation to execute.
    */
-  public void runWithClient(ClientRunnable command) {
-    executeWithClient((client, output) -> command.run(client, unitId, output));
+  public void runWithClient(String commandName, ClientRunnable command) {
+    executeWithClient(commandName, (client, output) -> command.run(client, unitId, output));
   }
 
   /**
@@ -166,8 +177,10 @@ public class ClientCommand {
    * @param count the number of iterations to execute; 0 for infinite polling until interrupted.
    * @param intervalMs the target delay in milliseconds between the start of each iteration.
    */
-  public void runWithClientPolling(ClientRunnable command, int count, int intervalMs) {
+  public void runWithClientPolling(
+      String commandName, ClientRunnable command, int count, int intervalMs) {
     executeWithClient(
+        commandName,
         (client, output) -> {
           int iteration = 0;
           while (count == 0 || iteration < count) {
@@ -178,7 +191,7 @@ public class ClientCommand {
             try {
               command.run(client, unitId, output);
             } catch (Exception e) {
-              handleException(e, output);
+              throw handleException(e, output);
             }
 
             long duration = System.nanoTime() - start;
@@ -200,31 +213,27 @@ public class ClientCommand {
    *
    * @param action the operation to execute with the connected client.
    */
-  private void executeWithClient(ClientAction action) {
+  private void executeWithClient(String commandName, ClientAction action) {
     OutputContext output = parent.createOutputContext();
+    output.setCommand("client." + commandName);
 
     Endpoint resolvedEndpoint;
     try {
       resolvedEndpoint = EndpointParser.parse(endpoint, port);
     } catch (Exception e) {
-      handleException(e, output);
-      return;
+      throw handleException(e, output);
     }
 
-    ModbusClient client;
-    try {
-      client = createClient(resolvedEndpoint);
-    } catch (Exception e) {
-      handleException(e, output);
-      return;
-    }
+    ModbusClient client = createClient(resolvedEndpoint);
 
     outputEndpointInfo(output, resolvedEndpoint);
     try {
       client.connect();
       action.execute(client, output);
+    } catch (ReportedCliException e) {
+      throw e;
     } catch (Exception e) {
-      handleException(e, output);
+      throw handleException(e, output);
     } finally {
       try {
         client.disconnect();
@@ -235,7 +244,7 @@ public class ClientCommand {
 
   /**
    * Internal callback for operations executed within the client lifecycle managed by {@link
-   * #executeWithClient(ClientAction)}.
+   * #executeWithClient(String, ClientAction)}.
    */
   private interface ClientAction {
 
@@ -258,14 +267,16 @@ public class ClientCommand {
    * @param e the exception to handle.
    * @param output the output context for error display.
    */
-  private void handleException(Exception e, OutputContext output) {
+  private ReportedCliException handleException(Exception e, OutputContext output) {
     if (parent.verbose) {
       var sw = new StringWriter();
       e.printStackTrace(new PrintWriter(sw));
-      output.error("%s", sw.toString());
+      output.error(e, "%s", sw.toString());
     } else {
-      output.error("%s", e.getMessage());
+      output.error(e, "%s", e.getMessage());
     }
+
+    return new ReportedCliException(e);
   }
 
   private void outputEndpointInfo(OutputContext output, Endpoint resolvedEndpoint) {

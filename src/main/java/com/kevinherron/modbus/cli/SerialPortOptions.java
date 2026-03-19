@@ -1,5 +1,6 @@
 package com.kevinherron.modbus.cli;
 
+import com.digitalpetri.modbus.serial.SerialPortTransportConfig;
 import com.fazecast.jSerialComm.SerialPort;
 import java.util.Locale;
 import picocli.CommandLine.Option;
@@ -110,17 +111,16 @@ public class SerialPortOptions {
   /**
    * Configures RS-485 mode on the given serial port if the {@code --rs485} option is enabled.
    *
-   * @param serialPort the serial port to configure.
+   * @param cfg the {@link SerialPortTransportConfig.Builder} being configured.
    */
-  public void configureRs485(SerialPort serialPort) {
+  public void configureRs485(SerialPortTransportConfig.Builder cfg) {
     if (rs485) {
-      serialPort.setRs485ModeParameters(
-          true,
-          rs485RtsActiveHigh,
-          rs485Termination,
-          rs485RxDuringTx,
-          rs485DelayBefore,
-          rs485DelayAfter);
+      cfg.setRs485Mode(true)
+          .setRs485RtsActiveHigh(rs485RtsActiveHigh)
+          .setRs485Termination(rs485Termination)
+          .setRs485RxDuringTx(rs485RxDuringTx)
+          .setRs485DelayBefore(rs485DelayBefore)
+          .setRs485DelayAfter(rs485DelayAfter);
     }
   }
 }

@@ -25,7 +25,7 @@ Modbus RTU server started on /dev/ttyUSB0
 **Read holding registers:**
 
 ```bash
-$ modbus client localhost rhr 0 10
+$ modbus client localhost read-holding-registers 0 10
 Hostname: localhost:502, Unit ID: 1
 → ReadHoldingRegistersRequest[address=0, quantity=10]
 ← ReadHoldingRegistersResponse[registers=0000000100020003000400050006000700080009]
@@ -38,19 +38,25 @@ Offset (hex)	Bytes (hex)
 **Get JSON output for automation:**
 
 ```bash
-$ modbus --format=json client localhost rhr 0 10
-{"timestamp":"2025-11-02T23:07:57.618695Z","type":"info","message":"Hostname: localhost:502, Unit ID: 1"}
-{"timestamp":"2025-11-02T23:07:57.627904Z","type":"register_table","start_address":0,"quantity":10,"data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+$ modbus --json --emit all client localhost read-holding-registers 0 10
+{"kind":"log","command":"client.read-holding-registers","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"level":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"direction":"sent","function_code":3,"pdu":"030000000a"}}
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"direction":"received","function_code":3,"pdu":"03140000000100020003000400050006000700080009"}}
+{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":4},"timestamp":"...","data":{"start_address":0,"quantity":10,"bytes":"0000000100020003000400050006000700080009","registers":[0,1,2,3,4,5,6,7,8,9]}}
 ```
 
 **Write then read back a register:**
 
 ```bash
-$ modbus --format=json client localhost wsr 100 42
-{"timestamp":"2025-11-02T23:08:09.316542Z","type":"protocol","direction":"received","function_code":6,"pdu":"060064002a"}
+$ modbus --json --emit all client localhost write-single-register 100 42
+{"kind":"log","command":"client.write-single-register","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"level":"info","message":"Hostname: localhost:502, Unit ID: 1"}}
+{"kind":"protocol","command":"client.write-single-register","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"direction":"sent","function_code":6,"pdu":"060064002a"}}
+{"kind":"protocol","command":"client.write-single-register","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"direction":"received","function_code":6,"pdu":"060064002a"}}
 
-$ modbus --format=json client localhost rhr 100 1
-{"timestamp":"2025-11-02T23:08:09.332309Z","type":"register_table","start_address":100,"quantity":1,"data":[0,42]}
+$ modbus --json client localhost read-holding-registers 100 1
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":1},"timestamp":"...","data":{"direction":"sent","function_code":3,"pdu":"0300640001"}}
+{"kind":"protocol","command":"client.read-holding-registers","invocation":{"id":"...","sequence":2},"timestamp":"...","data":{"direction":"received","function_code":3,"pdu":"0302002a"}}
+{"kind":"result","command":"client.read-holding-registers","invocation":{"id":"...","sequence":3},"timestamp":"...","data":{"start_address":100,"quantity":1,"bytes":"002a","registers":[42]}}
 ```
 
 **Scan a range of registers:**
@@ -72,18 +78,19 @@ Address 	Values (hex, 2 bytes each)
 **Poll and filter JSON output with jq:**
 
 ```bash
-$ modbus --format=json client localhost rhr 0 10 -c 5 | jq -c 'select(.type == "register_table") | {timestamp, data}'
-{"timestamp":"2025-11-02T23:12:37.072923Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:38.075708Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:39.081328Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:40.086801Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
-{"timestamp":"2025-11-02T23:12:41.088714Z","data":[0,0,0,1,0,2,0,3,0,4,0,5,0,6,0,7,0,8,0,9]}
+$ modbus --json client localhost read-holding-registers 0 10 -c 5 \
+    | jq -c 'select(.kind == "result") | {timestamp, data: .data.registers}'
+{"timestamp":"2026-03-11T22:58:39.194847Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:40.196611Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:41.201814Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:42.203609Z","data":[0,1,2,3,4,5,6,7,8,9]}
+{"timestamp":"2026-03-11T22:58:43.208813Z","data":[0,1,2,3,4,5,6,7,8,9]}
 ```
 
 **Read holding registers over RTU serial:**
 
 ```bash
-$ modbus client rtu:/dev/ttyUSB0 --baud 19200 rhr 0 10
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 read-holding-registers 0 10
 Serial Port: /dev/ttyUSB0, Unit ID: 1
 ...
 ```
@@ -91,7 +98,7 @@ Serial Port: /dev/ttyUSB0, Unit ID: 1
 **Use RS-485 mode:**
 
 ```bash
-$ modbus client rtu:/dev/ttyUSB0 --baud 19200 --rs485 --rs485-rts-high rhr 0 10
+$ modbus client rtu:/dev/ttyUSB0 --baud 19200 --rs485 --rs485-rts-high read-holding-registers 0 10
 Serial Port: /dev/ttyUSB0, Unit ID: 1, RS-485 mode
 ...
 ```
@@ -208,21 +215,22 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 ### Available Subcommands
 
-#### Read Operations
+#### Read Operations (read-only, safe to retry)
 
-- `rc <address> <quantity>` - Read coils (FC 01)
-- `rdi <address> <quantity>` - Read discrete inputs (FC 02)
-- `rhr <address> <quantity>` - Read holding registers (FC 03)
-- `rir <address> <quantity>` - Read input registers (FC 04)
+- `read-coils` / `rc` `<address> <quantity>` - Read coils (FC 01)
+- `read-discrete-inputs` / `rdi` `<address> <quantity>` - Read discrete inputs (FC 02)
+- `read-holding-registers` / `rhr` `<address> <quantity>` - Read holding registers (FC 03)
+- `read-input-registers` / `rir` `<address> <quantity>` - Read input registers (FC 04)
 
-#### Write Operations
+#### Write Operations (mutating)
 
-- `wsc <address> <value>` - Write single coil (FC 05)
-- `wmc <address> <values...>` - Write multiple coils (FC 15)
-- `wsr <address> <value>` - Write single register (FC 06)
-- `wmr <address> <values...>` - Write multiple registers (FC 16)
-- `mwr <address> <and-mask> <or-mask>` - Mask write register (FC 22)
-- `rwmr <read-addr> <read-qty> <write-addr> <values...>` - Read/Write multiple registers (FC 23)
+- `write-single-coil` / `wsc` `<address> <value>` - Write single coil (FC 05)
+- `write-multiple-coils` / `wmc` `<address> <values...>` - Write multiple coils (FC 15)
+- `write-single-register` / `wsr` `<address> <value>` - Write single register (FC 06)
+- `write-multiple-registers` / `wmr` `<address> <values...>` - Write multiple registers (FC 16)
+- `mask-write-register` / `mwr` `<address> <and-mask> <or-mask>` - Mask write register (FC 22)
+- `read-write-multiple-registers` / `rwmr` `<read-addr> <read-qty> <write-addr> <values...>` -
+  Read/Write multiple registers (FC 23)
 
 #### Other
 
@@ -232,9 +240,9 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 **Global Options:**
 
-- `--format <format>` - Output format: `human` (default), `json`
+- `--json` - Use JSON output format (default: human-readable)
+- `--emit <mode>` - Control JSON output volume: `all`, `data` (default with `--json`), `result`
 - `-v, --verbose` - Verbose mode - detailed output
-- `-q, --quiet` - Quiet mode - minimal output
 - `--no-color` - Disable ANSI color output
 
 **Client Options:**
@@ -269,7 +277,8 @@ Bare hostnames (without a scheme) are treated as TCP for backward compatibility.
 
 ### Dependencies
 
-- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP and RTU client/server implementation
+- [**digitalpetri/modbus**](https://github.com/digitalpetri/modbus) - Modbus TCP and RTU
+  client/server implementation
 - [**picocli**](https://github.com/remkop/picocli) - Command-line interface framework
 - [**jansi**](https://github.com/fusesource/jansi) - ANSI color support for terminal output
 
@@ -300,10 +309,10 @@ modbus-cli/
 │   ├── SerialPortOptions.java   # Serial port config mixin (baud, parity, RS-485)
 │   ├── client/
 │   │   ├── ClientCommand.java   # Client base command (TCP + RTU)
-│   │   ├── Read*.java          # Read operations (rc, rdi, rhr, rir)
-│   │   ├── Write*.java         # Write operations (wsc, wmc, wsr, wmr, mwr)
+│   │   ├── Read*.java          # Read operations (read-coils, read-discrete-inputs, read-holding-registers, read-input-registers)
+│   │   ├── Write*.java         # Write operations (write-single-coil, write-multiple-coils, write-single-register, write-multiple-registers, mask-write-register)
 │   │   ├── ScanCommand.java    # Scan operation with sliding window
-│   │   └── ReadWriteMultipleRegistersCommand.java  # rwmr operation
+│   │   └── ReadWriteMultipleRegistersCommand.java  # read-write-multiple-registers operation
 │   ├── server/
 │   │   └── ServerCommand.java  # Test server (TCP + RTU)
 │   ├── util/
@@ -343,19 +352,54 @@ mvn test
 
 ## JSON Output Format
 
-The CLI supports JSON output via `--format=json` for machine parsing and automation.
+The CLI supports JSON output via `--json` for machine parsing and automation.
 See [README_JSON_FORMAT.md](README_JSON_FORMAT.md) for complete documentation.
 
-### Output Types
+### Record Kinds
 
-- **register_table** - Register read results (rhr, rir, rwmr)
-- **coil_table** - Coil/discrete input results (rc, rdi)
-- **scan_results** - Scan command results with overlap detection
+- **result** - Register tables, coil tables, scan results
 - **protocol** - Raw Modbus PDU messages (hex-encoded)
-- **info** - Connection and status messages
-- **error** / **warning** - Diagnostic messages
+- **log** - Connection info, success, and warning messages
+- **error** - Structured error objects
 
 All JSON output is newline-delimited (NDJSON) for easy streaming and parsing.
+
+## Exit Codes
+
+The CLI uses stable, documented exit codes for automation:
+
+| Code | Meaning                    | Example                                   |
+|------|----------------------------|-------------------------------------------|
+| `0`  | Success                    | Command completed normally.               |
+| `1`  | General failure (fallback) | Unclassified Modbus error.                |
+| `2`  | CLI usage error            | Invalid arguments, missing parameters.    |
+| `3`  | Connection/Setup failure   | Cannot connect to host, serial port busy. |
+| `4`  | Modbus protocol failure    | Modbus exception response, CRC error.     |
+| `5`  | Timeout or interrupted     | Request timed out, operation interrupted. |
+| `10` | Internal error             | Unexpected exception, bug.                |
+
+Exit codes are derived from the exception cause chain. Specific codes (`2`-`5`) take precedence;
+otherwise the CLI falls back to `1` for generic `ModbusException` failures and `10` for other
+unexpected errors.
+
+## Agent Skill
+
+This project includes an [Agent Skill](https://agentskills.io/home) that lets AI coding agents
+interact with Modbus devices on your behalf. When the skill is installed, an agent can read
+registers, write coils, scan address ranges, or start a test server using natural language.
+
+The skill is located in [`skills/modbus-cli/`](skills/modbus-cli/) and requires the `modbus`
+executable to be on your `$PATH`.
+
+Example interactions:
+
+- *"Start a Modbus test server on port 502 and read the first 10 holding registers"*
+- *"Scan Modbus registers 0–100 on 192.168.1.50 and tell me which ones have non-zero values"*
+- *"Write 1500 to Modbus holding register 40 on 10.0.0.1, then read it back to confirm"*
+- *"Read Modbus coils 0–15 on the RTU device at /dev/ttyUSB0 with baud 19200 and summarize which are
+  on"*
+- *"Poll Modbus input registers 0–4 on localhost port 502 every second for 10 iterations, then
+  chart the trend"*
 
 ## License
 

@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleRegisterResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -17,12 +18,22 @@ import picocli.CommandLine.ParentCommand;
  * <p>This command writes a single 16-bit value to a holding register. Holding registers are
  * read/write values typically used for configuration settings, setpoints, or control parameters.
  *
- * <p>This command is invoked using {@code wsr} (e.g., {@code modbus client wsr 0 1234}).
+ * <p>This command is invoked using {@code write-single-register} (e.g., {@code modbus client
+ * write-single-register 0 1234}).
  *
  * @see WriteMultipleRegistersCommand for writing multiple registers (function code 16)
  * @see ReadHoldingRegistersCommand for reading holding register values (function code 03)
  */
-@Command(name = "wsr", description = "Write Single Register")
+@Command(
+    name = "write-single-register",
+    aliases = "wsr",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 06 (Write Single Register).",
+      "Mutating and idempotent when repeated with the same value.",
+      "Example: modbus client <endpoint> write-single-register 0 1234"
+    })
 class WriteSingleRegisterCommand implements Runnable {
 
   /** The address of the register to write. Addressing is typically 0-based. */
@@ -41,6 +52,7 @@ class WriteSingleRegisterCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "write-single-register",
         (ModbusClient client, int unitId, OutputContext output) -> {
           int registerValue = ValueParser.parseRegisterValue(value);
 

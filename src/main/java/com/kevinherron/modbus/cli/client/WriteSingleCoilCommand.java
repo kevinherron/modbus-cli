@@ -3,6 +3,7 @@ package com.kevinherron.modbus.cli.client;
 import com.digitalpetri.modbus.client.ModbusClient;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilRequest;
 import com.digitalpetri.modbus.pdu.WriteSingleCoilResponse;
+import com.kevinherron.modbus.cli.ModbusVersionProvider;
 import com.kevinherron.modbus.cli.output.Direction;
 import com.kevinherron.modbus.cli.output.OutputContext;
 import com.kevinherron.modbus.cli.util.ValueParser;
@@ -17,12 +18,22 @@ import picocli.CommandLine.ParentCommand;
  * <p>This command writes a single coil (discrete output) to either ON or OFF state. Coils are
  * read/write boolean values typically representing physical outputs like relays or actuators.
  *
- * <p>This command is invoked using {@code wsc} (e.g., {@code modbus client wsc 0 true}).
+ * <p>This command is invoked using {@code write-single-coil} (e.g., {@code modbus client
+ * write-single-coil 0 true}).
  *
  * @see WriteMultipleCoilsCommand for writing multiple coils (function code 15)
  * @see ReadCoilsCommand for reading coil values (function code 01)
  */
-@Command(name = "wsc", description = "Write Single Coil")
+@Command(
+    name = "write-single-coil",
+    aliases = "wsc",
+    mixinStandardHelpOptions = true,
+    versionProvider = ModbusVersionProvider.class,
+    description = {
+      "Modbus function code 05 (Write Single Coil).",
+      "Mutating and idempotent when repeated with the same value.",
+      "Example: modbus client <endpoint> write-single-coil 0 true"
+    })
 class WriteSingleCoilCommand implements Runnable {
 
   /** The address of the coil to write. Addressing is typically 0-based. */
@@ -42,6 +53,7 @@ class WriteSingleCoilCommand implements Runnable {
   @Override
   public void run() {
     clientCommand.runWithClient(
+        "write-single-coil",
         (ModbusClient client, int unitId, OutputContext output) -> {
           boolean coilValue = ValueParser.parseCoilValue(value);
 

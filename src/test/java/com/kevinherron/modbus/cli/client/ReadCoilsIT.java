@@ -25,13 +25,12 @@ public class ReadCoilsIT {
       // Read coils 100-109 (10 coils)
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rc",
+              "read-coils",
               "100",
               "10");
 
@@ -87,10 +86,13 @@ public class ReadCoilsIT {
       assertEquals(10, tableNode.get("quantity").asInt());
       assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-      // Verify the table's data array contains boolean values
-      ArrayNode dataNode = (ArrayNode) tableNode.get("data");
-      assertEquals(10, dataNode.size(), "Should have 10 boolean values");
-      List<Boolean> booleans = dataNode.valueStream().map(JsonNode::asBoolean).toList();
+      // Verify hex-encoded bytes
+      assertTrue(tableNode.has("bytes"), "table node should have bytes");
+
+      // Verify the coils array contains boolean values
+      ArrayNode coilsNode = (ArrayNode) tableNode.get("coils");
+      assertEquals(10, coilsNode.size(), "Should have 10 boolean values");
+      List<Boolean> booleans = coilsNode.valueStream().map(JsonNode::asBoolean).toList();
       assertEquals(10, booleans.size());
     }
   }
@@ -103,13 +105,12 @@ public class ReadCoilsIT {
       // Read coils 100-109 (10 coils) 3 times with interval 0
       Result result =
           CliTestRunner.execute(
-              "--format",
-              "json",
+              "--json",
               "client",
               "localhost",
               "-p",
               String.valueOf(server.getPort()),
-              "rc",
+              "read-coils",
               "100",
               "10",
               "-c",
@@ -171,8 +172,10 @@ public class ReadCoilsIT {
         assertEquals(iteration + 1, tableNode.get("iteration").asInt());
         assertTrue(tableNode.has("timestamp"), "table node should have timestamp");
 
-        ArrayNode dataNode = (ArrayNode) tableNode.get("data");
-        assertEquals(10, dataNode.size(), "Should have 10 boolean values");
+        assertTrue(tableNode.has("bytes"), "table node should have bytes");
+
+        ArrayNode coilsNode = (ArrayNode) tableNode.get("coils");
+        assertEquals(10, coilsNode.size(), "Should have 10 boolean values");
       }
     }
   }
